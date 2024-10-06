@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".uis.SignUp">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rectangle"
+            />
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/inter_bold"
+            android:text="Sign In"
+            android:textSize="30dp" />
+        <EditText
+            android:id="@+id/et_mail"
+            android:hint="Email"
+            android:drawableLeft="@drawable/message"
+            android:paddingLeft="20dp"
+            android:drawablePadding="20dp"
+            android:layout_gravity="center"
+            android:layout_width="289dp"
+            android:layout_height="53dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/edit_text_background" />
+        <LinearLayout
+            android:layout_width="289dp"
+            android:layout_height="53dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            >
+            <EditText
+                android:id="@+id/et_first_name"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/edit_text_background"
+                android:hint="First Name"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:paddingLeft="20dp"
+                />
+            <EditText
+                android:id="@+id/et_last_name"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/edit_text_background"
+                android:hint="Last Name"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp"
+                android:paddingLeft="20dp"
+                />
+
+        </LinearLayout>
+        <EditText
+            android:id="@+id/et_password"
+            android:hint="password"
+            android:drawableLeft="@drawable/lock"
+            android:paddingLeft="20dp"
+            android:drawablePadding="20dp"
+            android:layout_gravity="center"
+            android:layout_width="289dp"
+            android:layout_height="53dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/edit_text_background" />
+        <EditText
+            android:id="@+id/et_confirm_password"
+            android:hint="Confirm Password"
+            android:drawableLeft="@drawable/lock"
+            android:paddingLeft="20dp"
+            android:drawablePadding="20dp"
+            android:layout_gravity="center"
+            android:layout_width="289dp"
+            android:layout_height="53dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/edit_text_background" />
+        <Button
+            android:id="@+id/button"
+            android:layout_width="292dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="#22577A"
+            android:text="Sign In"
+            />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Already Have an Account?"/>
+            <TextView
+                android:id="@+id/tx_sign_in"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textStyle="bold"
+                android:text="Sign in"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+</layout>
