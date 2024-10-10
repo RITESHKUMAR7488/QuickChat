@@ -3,6 +3,7 @@ package com.example.quickchat.constants
 object Constant {
     const val USERS="users"
     const val AUTH="auth"
+    const val PASSWORD="password"
     const val LOGGED_IN_EMAIL="emailLogin"
     const val LOGGED_IN="loggedIN"
     const val TEACHER_LOGIN="TeacherLogin"

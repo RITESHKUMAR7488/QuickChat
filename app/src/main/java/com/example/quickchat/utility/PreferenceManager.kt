@@ -45,6 +45,28 @@ class PreferenceManager @Inject constructor(@ApplicationContext val context: Con
             editor.commit()
         }
 
+    var email: String?
+        get()= mPreferences.getString(Constant.EMAIL,"")
+        set(email){
+            editor.putString(Constant.EMAIL,email)
+            editor.commit()
+        }
+
+    var password: String?
+        get()= mPreferences.getString(Constant.PASSWORD,"")
+        set(password){
+            editor.putString(Constant.PASSWORD,password)
+            editor.commit()
+        }
+
+    var userId: String?
+        get()= mPreferences.getString(Constant.AUTH_MODEL,"")
+        set(userId){
+            editor.putString(Constant.AUTH_MODEL,userId)
+            editor.commit()
+        }
+
+
 
 
 

@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.databinding.ActivitySignUpBinding
 import com.example.quickchat.onboardingModule.models.UserModel
@@ -78,6 +79,10 @@ class SignUp : BaseActivity() {
                     }
                     is UiState.Success ->{
                         Log.d("states",it.data.toString())
+                        preferenceManager.isLoggedIn=true
+                        val intent= Intent(this@SignUp, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
 
                     }
                     is UiState.Failure ->{

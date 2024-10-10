@@ -11,16 +11,21 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+// Annotation that specifies this module will be installed in the SingletonComponent, meaning
+// the provided dependencies will live for the entire lifecycle of the application.
 @InstallIn(SingletonComponent::class)
 @Module
 class OnBoardingModule {
 
+    // Annotates the function as a provider of a dependency.
+    // This function will provide an instance of OnBoardingRepository.
     @Provides
-    @Singleton
+    @Singleton // Ensures that only one instance of the provided object is created (Singleton pattern).
     fun provideOnBoardingRepository(
-        database: FirebaseFirestore,
-        auth: FirebaseAuth
+        database: FirebaseFirestore,  // FirebaseFirestore instance, injected automatically by Hilt.
+        auth: FirebaseAuth            // FirebaseAuth instance, injected automatically by Hilt.
     ): OnBoardingRepository {
-        return OnBoardingRepositoryImpl(database,auth)
+        // Returns a concrete implementation of OnBoardingRepository.
+        return OnBoardingRepositoryImpl(database, auth)
     }
 }

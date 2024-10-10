@@ -4,19 +4,24 @@ import android.content.Context
 import android.util.Log
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.onboardingModule.models.UserModel
+import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import javax.inject.Inject
 
- class OnBoardingRepositoryImpl(
+class OnBoardingRepositoryImpl(
     private val database: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) : OnBoardingRepository {
     private lateinit var userId: String
+    @Inject
+    lateinit var preferenceManager:PreferenceManager
 
 
 
@@ -71,18 +76,44 @@ import com.google.firebase.firestore.FirebaseFirestore
 
     }
 
-    override fun login(
-        context: Context,
-        email: String,
-        password: String,
-        teacherModel: UserModel,
-        result: (UiState<String>) -> Unit
-    ) {
-        TODO("Not yet implemented")
-    }
+     override fun login(
+         context: Context,
+         email: String,
+         password: String,
+         result: (UiState<String>) -> Unit
+     ) {
+         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+             if(it.isSuccessful){
+                 Log.d("userId",auth.currentUser!!.uid)
+                 userId= auth.currentUser!!.uid
+                 result.invoke(UiState.Success("Login successfully"))
+
+
+
+             }else {
+                 try {
+                     throw it.exception ?: java.lang.Exception("invalid authentication")
+                 } catch (e: FirebaseAuthWeakPasswordException) {
+                     result.invoke(UiState.Failure("Authentication failed, password must be at least 6 chracter"))
+                 } catch (e: FirebaseAuthInvalidCredentialsException) {
+                     result.invoke(UiState.Failure("Authentication failed,Invalid email or password"))
+                 } catch (e: FirebaseAuthUserCollisionException) {
+                     result.invoke(UiState.Failure("Authentication failed,Email already registered"))
+                 } catch (e: Exception) {
+                     e.message?.let { it1 -> UiState.Failure(it1) }
+                         ?.let { it2 -> result.invoke(it2) }
+                 }
+
+             }
+
+         }
+
+     }
+
+
 
     override fun sendUserData(userModel: UserModel, result: (UiState<String>) -> Unit) {
-        Log.d("statess", "EnterHare")
+        Log.d("statess", "EnterHere")
         val document = database.collection(Constant.USERS).document(userId)
 
         userModel.uid=userId
@@ -100,10 +131,21 @@ import com.google.firebase.firestore.FirebaseFirestore
     override fun googleSignIn(
         context: Context,
         account: GoogleSignInAccount,
-        teacherModel: UserModel,
+        userModel: UserModel,
         result: (UiState<String>) -> Unit
-    ) {
-        TODO("Not yet implemented")
+    )  {
+        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+        preferenceManager = PreferenceManager(context)
+        auth.signInWithCredential(credential).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("token", account.idToken.toString())
+                userId = auth.currentUser!!.uid
+                preferenceManager.email = account.email
+
+
+
+            }
+        }
     }
 
     override fun googleSignInSendUserData(
@@ -113,11 +155,5 @@ import com.google.firebase.firestore.FirebaseFirestore
         TODO("Not yet implemented")
     }
 
-    override fun userLogin(
-        teacherId: String,
-        studentId: String,
-        result: (UiState<Boolean>) -> Unit
-    ) {
-        TODO("Not yet implemented")
-    }
+
 }

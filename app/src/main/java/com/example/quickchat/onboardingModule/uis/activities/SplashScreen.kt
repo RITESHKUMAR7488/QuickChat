@@ -7,21 +7,37 @@ import android.os.Looper
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.databinding.ActivitySplashScreenBinding
+import com.example.quickchat.utility.BaseActivity
+import dagger.hilt.android.AndroidEntryPoint
 
-class SplashScreen : AppCompatActivity() {
+@AndroidEntryPoint
+class SplashScreen : BaseActivity() {
     private lateinit var binding: ActivitySplashScreenBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding= DataBindingUtil.setContentView(this,R.layout.activity_splash_screen)
         with(binding){
-            Handler(Looper.getMainLooper()).postDelayed({
-                startActivity(Intent(this@SplashScreen, SignIn::class.java))
-                finish()
+            if (preferenceManager.isLoggedIn){
+                Handler(Looper.getMainLooper()).postDelayed({
 
-            },3000)
+                    startActivity(Intent(this@SplashScreen, MainActivity::class.java))
+                    finish()
+
+                },3000)
+            }
+            else{
+                Handler(Looper.getMainLooper()).postDelayed({
+
+                    startActivity(Intent(this@SplashScreen, SignUp::class.java))
+                    finish()
+
+                },3000)
+            }
+
 
         }
 
