@@ -134,7 +134,6 @@ class OnBoardingRepositoryImpl(
         userModel: UserModel,
         result: (UiState<String>) -> Unit
     ) {
-        // Notify that the process is loading
         result(UiState.Loading)
 
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
