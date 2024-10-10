@@ -143,10 +143,18 @@ class OnBoardingRepositoryImpl(
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val userId = auth.currentUser?.uid
-                Log.d("auth", "Sign-in successful, userId: $userId")
+                Log.d("authss", "Sign-in successful, userId: $userId")
+
                 if (userId != null) {
+                    userModel.firstName = account.givenName ?: "N/A"
+                    userModel.lastName = account.familyName ?: "N/A"
+                    userModel.email = account.email ?: "N/A"
+                    userModel.uid = userId
+
                     preferenceManager.email = account.email
-                    result(UiState.Success("Sign-in successful with userId: $userId"))
+                    googleSignInSendUserData(userModel) { userDataResult ->
+                        result(userDataResult)
+                    }
                 } else {
                     result(UiState.Failure("User ID is null"))
                 }
@@ -154,16 +162,35 @@ class OnBoardingRepositoryImpl(
                 Log.e("auth", "Sign-in failed", task.exception)
                 result(UiState.Failure(task.exception?.message ?: "Unknown error occurred"))
             }
-
         }
     }
 
     override fun googleSignInSendUserData(
-        teacherModel: UserModel,
+        userModel: UserModel,
         result: (UiState<String>) -> Unit
     ) {
-        TODO("Not yet implemented")
+        result(UiState.Loading)
+
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            result(UiState.Failure("User ID is null"))
+            return
+        }
+
+        userModel.uid = userId
+
+        val document = database.collection(Constant.USERS).document(userId)
+        document.set(userModel)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Google user data stored successfully")
+                result(UiState.Success("Google user data successfully stored in Firestore"))
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error storing Google user data", e)
+                result(UiState.Failure(e.message ?: "Unknown error occurred"))
+            }
     }
+
 
 
 }
