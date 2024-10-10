@@ -133,18 +133,28 @@ class OnBoardingRepositoryImpl(
         account: GoogleSignInAccount,
         userModel: UserModel,
         result: (UiState<String>) -> Unit
-    )  {
+    ) {
+        // Notify that the process is loading
+        result(UiState.Loading)
+
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         preferenceManager = PreferenceManager(context)
+
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Log.d("token", account.idToken.toString())
-                userId = auth.currentUser!!.uid
-                preferenceManager.email = account.email
-
-
-
+                val userId = auth.currentUser?.uid
+                Log.d("auth", "Sign-in successful, userId: $userId")
+                if (userId != null) {
+                    preferenceManager.email = account.email
+                    result(UiState.Success("Sign-in successful with userId: $userId"))
+                } else {
+                    result(UiState.Failure("User ID is null"))
+                }
+            } else {
+                Log.e("auth", "Sign-in failed", task.exception)
+                result(UiState.Failure(task.exception?.message ?: "Unknown error occurred"))
             }
+
         }
     }
 

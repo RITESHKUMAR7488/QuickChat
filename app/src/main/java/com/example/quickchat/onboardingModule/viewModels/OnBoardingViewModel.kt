@@ -35,12 +35,11 @@ class OnBoardingViewModel @Inject constructor(private val repository: OnBoarding
             register.value=it
         }
     }
-    fun googleSignIn(context: Context, account: GoogleSignInAccount,model: UserModel){
-        gMails.value= UiState.Loading
-        repository.googleSignIn(context,account,model){
-            login.value=it
+    fun googleSignIn(context: Context, account: GoogleSignInAccount, model: UserModel) {
+        gMails.value = UiState.Loading
+        repository.googleSignIn(context, account, model) {
+            gMails.value = it
         }
-
     }
 
 }

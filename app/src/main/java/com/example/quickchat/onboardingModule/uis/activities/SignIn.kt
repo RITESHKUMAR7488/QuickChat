@@ -130,6 +130,8 @@ class SignIn : BaseActivity() {
         onBoardingModel.googleSignIn(this, account, userModel)
         onBoardingModel.gmail.observe(this){
 
+            Log.d("observerData",it.toString())
+
 
             when (it) {
                 is UiState.Loading -> {
