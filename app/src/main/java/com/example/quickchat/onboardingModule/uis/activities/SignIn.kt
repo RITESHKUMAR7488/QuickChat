@@ -77,7 +77,6 @@ class SignIn : BaseActivity() {
                     val email = etMail.text.toString().trim()
                     val password = etPassword.text.toString().trim()
 
-                    // Call ViewModel to perform login
                     onBoardingModel.loginUser(this@SignIn, email, password)
                     onBoardingModel.reg.observe(this@SignIn) {
                         when (it) {
@@ -114,7 +113,7 @@ class SignIn : BaseActivity() {
         }
     }
 
-    // Process the Google Sign-In result
+
     private fun handleResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account: GoogleSignInAccount? = completedTask.getResult(ApiException::class.java)
@@ -126,9 +125,9 @@ class SignIn : BaseActivity() {
         }
     }
 
-    // Update UI and handle Google Sign-In logic
+
     private fun UpdateUI(account: GoogleSignInAccount) {
-        // Initialize the user model with Google account data
+
         userModel = UserModel().apply {
             firstName = account.displayName
             email = account.email
@@ -139,36 +138,19 @@ class SignIn : BaseActivity() {
         onBoardingModel.gmail.observe(this) {
             when (it) {
                 is UiState.Loading -> {
-                    // Handle loading state if necessary
+
                 }
 
                 is UiState.Success -> {
-                    // If the Google Sign-In is successful, set preferences for Gmail login
+
                     preferenceManager.isGmailLoggedIn = true
-                    preferenceManager.isLoggedIn = true // Optionally set general login flag
+                    preferenceManager.isLoggedIn = true
+                    startActivity(Intent(this@SignIn, MainActivity::class.java))
+                    finish()
 
-                    // Call the function to send user data to Firestore
-                    googleSignInSendUserData(userModel) { result ->
-                        when (result) {
-                            is UiState.Success -> {
-                                // Log success and navigate to MainActivity
-                                Log.d("Firestore", "User data stored: ${result.data}")
-                                startActivity(Intent(this@SignIn, MainActivity::class.java))
-                                finish()
-                            }
-
-                            is UiState.Failure -> {
-                                // Show error message if something went wrong
-                                commonUtil.showToast(result.error)
-                            }
-
-                            else -> {}
-                        }
-                    }
                 }
 
                 is UiState.Failure -> {
-                    // Handle failure if Google Sign-In fails
                     commonUtil.showToast(it.error)
                 }
             }
@@ -176,30 +158,5 @@ class SignIn : BaseActivity() {
     }
 
 
-    // Function to store user data in Firestore after Google Sign-In
-    private fun googleSignInSendUserData(userModel: UserModel, result: (UiState<String>) -> Unit) {
-        result(UiState.Loading) // Indicate that the process has started
 
-        // Get the current user's ID from Firebase Authentication
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            result(UiState.Failure("User ID is null")) // Handle missing user ID
-            return
-        }
-
-        // Assign the user ID to the user model
-        userModel.uid = userId
-
-        // Create Firestore document reference and store user data
-        val document = database.collection(Constant.USERS).document(userId)
-        document.set(userModel)
-            .addOnSuccessListener {
-                Log.d("Firestore", "Google user data stored successfully")
-                result(UiState.Success("Google user data successfully stored in Firestore"))
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Error storing Google user data", e)
-                result(UiState.Failure(e.message ?: "Unknown error occurred"))
-            }
-    }
 }
