@@ -31,8 +31,6 @@ class SignIn : BaseActivity() {
     private lateinit var binding: ActivitySignInBinding
     private lateinit var userModel: UserModel
     private lateinit var mGoogleSignInClient: GoogleSignInClient
-    private lateinit var auth: FirebaseAuth
-    private lateinit var database: FirebaseFirestore
     private val Req_Code: Int = 123
 
     // Initialize ViewModel for handling user onboarding processes
@@ -45,9 +43,7 @@ class SignIn : BaseActivity() {
         // Bind layout using DataBindingUtil
         binding = DataBindingUtil.setContentView(this, R.layout.activity_sign_in)
 
-        // Initialize Firebase Auth and Firestore
-        auth = FirebaseAuth.getInstance()
-        database = FirebaseFirestore.getInstance()
+
 
         // Configure Google Sign-In options
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

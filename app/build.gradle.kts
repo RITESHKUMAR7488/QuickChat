@@ -1,3 +1,5 @@
+import java.util.regex.Pattern.compile
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -63,4 +65,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation (libs.circleimageview)
+
 }
