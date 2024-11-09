@@ -12,4 +12,5 @@ data class CommunityModels(
     var mobileNumber: String? = null,
     var address: String? = null,
     var id: String? = null,
+    var userId: String? = null,
 ): Serializable
