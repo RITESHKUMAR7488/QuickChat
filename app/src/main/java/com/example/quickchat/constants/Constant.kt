@@ -21,6 +21,10 @@ object Constant {
     const val CHAT="chat"
     const val BATCH="batch"
     const val STUDENT_MODEL="studentModel"
+    const val COMMUNITIES="communities"
+    const val MY_COMMUNITIES="MyCommunity"
+    const val USERID="userId"
+    const val COMMUNITY_ID="communityId"
 
 
 }
