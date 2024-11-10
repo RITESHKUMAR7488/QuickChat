@@ -39,6 +39,8 @@ class OnBoardingRepositoryImpl(
             userId = auth.currentUser?.uid ?: ""
             Log.d("statess", it.toString())
 
+            preferenceManager.userId=userId
+
             if (it.isSuccessful) {
                 sendUserData(userModel) { state ->
                     when (state) {
@@ -86,6 +88,7 @@ class OnBoardingRepositoryImpl(
              if(it.isSuccessful){
                  Log.d("userId",auth.currentUser!!.uid)
                  userId= auth.currentUser!!.uid
+                 preferenceManager.userId=userId
                  result.invoke(UiState.Success("Login successfully"))
 
 
@@ -117,6 +120,7 @@ class OnBoardingRepositoryImpl(
         val document = database.collection(Constant.USERS).document(userId)
 
         userModel.uid=userId
+        preferenceManager.userId=userId
         document.set(userModel).addOnSuccessListener {
             Log.d("succes", "succes2")
             result.invoke(
@@ -142,6 +146,7 @@ class OnBoardingRepositoryImpl(
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val userId = auth.currentUser?.uid
+                preferenceManager.userId=userId.toString()
                 Log.d("authss", "Sign-in successful, userId: $userId")
 
                 if (userId != null) {
@@ -177,6 +182,7 @@ class OnBoardingRepositoryImpl(
         }
 
         userModel.uid = userId
+        preferenceManager.userId=userId
 
         val document = database.collection(Constant.USERS).document(userId)
         document.set(userModel)

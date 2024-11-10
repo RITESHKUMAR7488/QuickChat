@@ -7,10 +7,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
-import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.databinding.ActivitySignInBinding
+import com.example.quickchat.mainModule.ui.activity.MainActivity
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.onboardingModule.viewModels.OnBoardingViewModel
 import com.example.quickchat.utility.BaseActivity

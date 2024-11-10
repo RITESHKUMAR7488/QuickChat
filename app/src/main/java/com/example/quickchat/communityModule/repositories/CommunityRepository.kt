@@ -7,6 +7,6 @@ import com.example.quickchat.utility.UiState
 
 interface CommunityRepository {
 
-    fun addCommunity(userId: String,model: CommunityModels, result: (UiState<CommunityModels>) -> Unit)
+    fun addCommunity(userId: String,model: CommunityModels, role:String,result: (UiState<CommunityModels>) -> Unit)
 
 }

@@ -25,6 +25,8 @@ object Constant {
     const val MY_COMMUNITIES="MyCommunity"
     const val USERID="userId"
     const val COMMUNITY_ID="communityId"
+    const val ADMIN="admin"
+    const val MEMBER="member"
 
 
 }

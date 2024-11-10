@@ -66,10 +66,4 @@ class PreferenceManager @Inject constructor(@ApplicationContext val context: Con
             editor.commit()
         }
 
-
-
-
-
-
-
 }
