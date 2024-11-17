@@ -10,6 +10,7 @@ import androidx.databinding.DataBindingUtil
 import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.databinding.ActivitySplashScreenBinding
+import com.example.quickchat.mainModule.ui.activity.HomeActivity
 import com.example.quickchat.utility.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,7 +25,7 @@ class SplashScreen : BaseActivity() {
             if (preferenceManager.isLoggedIn){
                 Handler(Looper.getMainLooper()).postDelayed({
 
-                    startActivity(Intent(this@SplashScreen, MainActivity::class.java))
+                    startActivity(Intent(this@SplashScreen, HomeActivity::class.java))
                     finish()
 
                 },3000)

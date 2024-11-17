@@ -12,15 +12,14 @@ import kotlin.contracts.Returns
 
 @InstallIn(SingletonComponent::class)
 @Module
-
 class CommunityModule {
+
     @Provides
     @Singleton
     fun provideCommunityRepository(
         database: FirebaseFirestore,
 
-
-        ): CommunityRepositoryImpl {
+        ): CommunityRepository {
         return CommunityRepositoryImpl(database)
     }
 }

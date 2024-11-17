@@ -46,6 +46,8 @@ android {
     kapt {
         correctErrorTypes = true
     }
+    
+
 }
 
 dependencies {
@@ -66,5 +68,6 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     implementation (libs.circleimageview)
+    implementation (libs.gson)
 
 }

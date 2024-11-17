@@ -1,138 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="16dp"
-    android:background="@drawable/screen_background">
+<layout>
 
-    <!-- Profile Picture Upload -->
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/profileImage"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:background="@drawable/user"
-        android:contentDescription="Profile Picture"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/screen_background"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/uploadText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Upload Profile Picture"
-        android:textColor="#007AFF"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/profileImage"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Profile Picture Upload -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profileImage"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/user"
+            android:contentDescription="Profile Picture"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Name Field -->
-    <EditText
-        android:id="@+id/nameInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="10dp"
-        android:hint="Name"
-        android:padding="12dp"
-        android:background="@drawable/edit_text_background"
-        android:inputType="textPersonName"
-        app:layout_constraintTop_toBottomOf="@id/uploadText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="1.0" />
+        <TextView
+            android:id="@+id/uploadText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Upload Profile Picture"
+            android:textColor="#007AFF"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/profileImage" />
 
-    <!-- Description Field -->
-    <EditText
-        android:id="@+id/descriptionInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="10dp"
-        android:hint="Description"
-        android:padding="12dp"
-        android:background="@drawable/edit_text_background"
-        android:inputType="textMultiLine"
-        android:lines="3"
-        app:layout_constraintTop_toBottomOf="@id/nameInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="1.0" />
+        <!-- Name Field -->
+        <EditText
+            android:id="@+id/nameInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="Name"
+            android:inputType="textPersonName"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/uploadText"
+            app:layout_constraintWidth_percent="1.0" />
 
-    <!-- Email Field -->
-    <EditText
-        android:id="@+id/emailInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Email"
-        android:layout_marginVertical="10dp"
-        android:padding="12dp"
-        android:background="@drawable/edit_text_background"
-        android:inputType="textEmailAddress"
-        app:layout_constraintTop_toBottomOf="@id/descriptionInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="1.0" />
+        <!-- Description Field -->
+        <EditText
+            android:id="@+id/descriptionInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="Description"
+            android:inputType="textMultiLine"
+            android:lines="3"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/nameInput"
+            app:layout_constraintWidth_percent="1.0" />
 
-    <!-- ID Field -->
-    <EditText
-        android:id="@+id/idInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="10dp"
-        android:hint="ID"
-        android:padding="12dp"
-        android:background="@drawable/edit_text_background"
-        android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/emailInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="1.0" />
+        <!-- Email Field -->
+        <EditText
+            android:id="@+id/emailInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/descriptionInput"
+            app:layout_constraintWidth_percent="1.0" />
 
-    <!-- Mobile Number Field -->
-    <EditText
-        android:id="@+id/mobileInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Mobile Number"
-        android:padding="12dp"
-        android:layout_marginVertical="10dp"
-        android:background="@drawable/edit_text_background"
-        android:inputType="phone"
-        app:layout_constraintTop_toBottomOf="@id/idInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="1.0" />
+        <!-- ID Field -->
+        <EditText
+            android:id="@+id/idInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="ID"
+            android:inputType="text"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/emailInput"
+            app:layout_constraintWidth_percent="1.0" />
 
-    <!-- Address Field -->
-    <EditText
-        android:id="@+id/addressInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Address"
-        android:padding="12dp"
-        android:layout_marginVertical="10dp"
-        android:background="@drawable/edit_text_background"
-        android:inputType="textPostalAddress"
-        app:layout_constraintTop_toBottomOf="@id/mobileInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="1.0" />
+        <!-- Mobile Number Field -->
+        <EditText
+            android:id="@+id/mobileInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="Mobile Number"
+            android:inputType="phone"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/idInput"
+            app:layout_constraintWidth_percent="1.0" />
 
-    <!-- Create Profile Button -->
-    <Button
-        android:id="@+id/createProfileButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#007AFF"
-        android:text="Create Profile"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/addressInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="1.0" />
+        <!-- Address Field -->
+        <EditText
+            android:id="@+id/addressInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="Address"
+            android:inputType="textPostalAddress"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/mobileInput"
+            app:layout_constraintWidth_percent="1.0" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Create Profile Button -->
+        <Button
+            android:id="@+id/createProfileButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#007AFF"
+            android:text="Create Profile"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/addressInput"
+            app:layout_constraintWidth_percent="1.0" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
+

@@ -20,6 +20,7 @@ class OnBoardingRepositoryImpl(
     private val auth: FirebaseAuth
 ) : OnBoardingRepository {
     private lateinit var userId: String
+
     @Inject
     lateinit var preferenceManager:PreferenceManager
 
@@ -33,14 +34,17 @@ class OnBoardingRepositoryImpl(
         result: (UiState<String>) -> Unit
     ) {
         Log.d("statess", email+password)
+        preferenceManager = PreferenceManager(context)
 
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
             Log.d("statess", auth.currentUser?.uid ?: "")
             userId = auth.currentUser?.uid ?: ""
             Log.d("statess", it.toString())
 
+            preferenceManager.userId=userId
+
             if (it.isSuccessful) {
-                sendUserData(userModel) { state ->
+                sendUserData(context,userModel) { state ->
                     when (state) {
                         is UiState.Success -> {
                             result.invoke(UiState.Success("user register successfully"))
@@ -76,47 +80,52 @@ class OnBoardingRepositoryImpl(
 
     }
 
-     override fun login(
-         context: Context,
-         email: String,
-         password: String,
-         result: (UiState<String>) -> Unit
-     ) {
-         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-             if(it.isSuccessful){
-                 Log.d("userId",auth.currentUser!!.uid)
-                 userId= auth.currentUser!!.uid
-                 result.invoke(UiState.Success("Login successfully"))
+    override fun login(
+        context: Context,
+        email: String,
+        password: String,
+        result: (UiState<String>) -> Unit
+    ) {
+        preferenceManager = PreferenceManager(context)
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+            if(it.isSuccessful){
+                Log.d("userId",auth.currentUser!!.uid)
+                userId= auth.currentUser!!.uid
+                preferenceManager.userId=userId
+                Log.d("userId",preferenceManager.userId.toString())
+                result.invoke(UiState.Success("Login successfully"))
 
 
 
-             }else {
-                 try {
-                     throw it.exception ?: java.lang.Exception("invalid authentication")
-                 } catch (e: FirebaseAuthWeakPasswordException) {
-                     result.invoke(UiState.Failure("Authentication failed, password must be at least 6 chracter"))
-                 } catch (e: FirebaseAuthInvalidCredentialsException) {
-                     result.invoke(UiState.Failure("Authentication failed,Invalid email or password"))
-                 } catch (e: FirebaseAuthUserCollisionException) {
-                     result.invoke(UiState.Failure("Authentication failed,Email already registered"))
-                 } catch (e: Exception) {
-                     e.message?.let { it1 -> UiState.Failure(it1) }
-                         ?.let { it2 -> result.invoke(it2) }
-                 }
+            }else {
+                try {
+                    throw it.exception ?: java.lang.Exception("invalid authentication")
+                } catch (e: FirebaseAuthWeakPasswordException) {
+                    result.invoke(UiState.Failure("Authentication failed, password must be at least 6 chracter"))
+                } catch (e: FirebaseAuthInvalidCredentialsException) {
+                    result.invoke(UiState.Failure("Authentication failed,Invalid email or password"))
+                } catch (e: FirebaseAuthUserCollisionException) {
+                    result.invoke(UiState.Failure("Authentication failed,Email already registered"))
+                } catch (e: Exception) {
+                    e.message?.let { it1 -> UiState.Failure(it1) }
+                        ?.let { it2 -> result.invoke(it2) }
+                }
 
-             }
+            }
 
-         }
+        }
 
-     }
+    }
 
 
 
-    override fun sendUserData(userModel: UserModel, result: (UiState<String>) -> Unit) {
+    override fun sendUserData( context: Context,userModel: UserModel, result: (UiState<String>) -> Unit) {
         Log.d("statess", "EnterHere")
         val document = database.collection(Constant.USERS).document(userId)
+        preferenceManager = PreferenceManager(context)
 
         userModel.uid=userId
+        preferenceManager.userId=userId
         document.set(userModel).addOnSuccessListener {
             Log.d("succes", "succes2")
             result.invoke(
@@ -135,6 +144,7 @@ class OnBoardingRepositoryImpl(
         result: (UiState<String>) -> Unit
     ) {
         result(UiState.Loading)
+        preferenceManager = PreferenceManager(context)
 
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         preferenceManager = PreferenceManager(context)
@@ -142,6 +152,7 @@ class OnBoardingRepositoryImpl(
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val userId = auth.currentUser?.uid
+                preferenceManager.userId=userId.toString()
                 Log.d("authss", "Sign-in successful, userId: $userId")
 
                 if (userId != null) {
@@ -151,7 +162,7 @@ class OnBoardingRepositoryImpl(
                     userModel.uid = userId
 
                     preferenceManager.email = account.email
-                    googleSignInSendUserData(userModel) { userDataResult ->
+                    googleSignInSendUserData(context,userModel) { userDataResult ->
                         result(userDataResult)
                     }
                 } else {
@@ -165,10 +176,12 @@ class OnBoardingRepositoryImpl(
     }
 
     override fun googleSignInSendUserData(
+        context: Context,
         userModel: UserModel,
         result: (UiState<String>) -> Unit
     ) {
         result(UiState.Loading)
+        preferenceManager = PreferenceManager(context)
 
         val userId = auth.currentUser?.uid
         if (userId == null) {
@@ -177,6 +190,7 @@ class OnBoardingRepositoryImpl(
         }
 
         userModel.uid = userId
+        preferenceManager.userId=userId
 
         val document = database.collection(Constant.USERS).document(userId)
         document.set(userModel)

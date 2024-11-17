@@ -5,8 +5,11 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 
 import com.example.quickchat.constants.Constant
+import com.example.quickchat.onboardingModule.models.UserModel
+import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+
 
 class PreferenceManager @Inject constructor(@ApplicationContext val context: Context) {
 
@@ -31,19 +34,7 @@ class PreferenceManager @Inject constructor(@ApplicationContext val context: Con
             editor.commit()
         }
 
-    var isTeacherLogIn: Boolean
-        get() = mPreferences.getBoolean(Constant.TEACHER_LOGIN, false)
-        set(teacherLogin) {
-            editor.putBoolean(Constant.TEACHER_LOGIN, teacherLogin)
-            editor.commit()
-        }
 
-    var isStudentLogIn: Boolean
-        get() = mPreferences.getBoolean(Constant.STUDENT_LOGIN, false)
-        set(studentLogin) {
-            editor.putBoolean(Constant.STUDENT_LOGIN, studentLogin)
-            editor.commit()
-        }
 
     var email: String?
         get()= mPreferences.getString(Constant.EMAIL,"")
@@ -67,6 +58,20 @@ class PreferenceManager @Inject constructor(@ApplicationContext val context: Con
         }
 
 
+
+    var userModel: UserModel?
+        get() {
+            val json = mPreferences.getString(Constant.USER_MODEL, null)
+            return if (json != null) {
+                Gson().fromJson(json, UserModel::class.java)
+            } else {
+                null
+            }
+        }
+        set(value) {
+            val json = Gson().toJson(value)
+            editor.putString(Constant.USER_MODEL, json).apply()
+        }
 
 
 
