@@ -101,7 +101,8 @@ class PostActivity : BaseActivity() {
                 title = title,
                 description = description,
                 userId = preferenceManager.userId,// Set the userId
-                detailModel = detailModel
+                detailModel = detailModel,
+                communityId = communityId
 
             )
 

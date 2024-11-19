@@ -8,6 +8,7 @@ data class PostModel(
     var title: String? = null,
     var description: String? = null,
     var imageUrls: List<String>? = null,
-    var detailModel: DetailModel
+    var detailModel: DetailModel,
+    var postId:String?=null
 
 ):Serializable

@@ -2,6 +2,7 @@ package com.example.quickchat.mainModule.repositories
 
 import android.util.Log
 import com.example.quickchat.constants.Constant
+import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.PostModel
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.UiState
@@ -18,11 +19,11 @@ class MainRepositoryImp(private val database: FirebaseFirestore) : RepositoryMai
             .document(communityId).collection(Constant.MY_POST).add(model)
             .addOnSuccessListener { documentReference ->
 
-                val communityId = documentReference.id
-                model.communityId = communityId
+                val postId = documentReference.id
+                model.postId = postId
 
                 database.collection(Constant.POSTS)
-                    .document(communityId)
+                    .document(postId)
                     .set(model)
                     .addOnSuccessListener {
                         result.invoke(
@@ -65,6 +66,30 @@ class MainRepositoryImp(private val database: FirebaseFirestore) : RepositoryMai
 
             }
     }
+
+    override fun getAllCommunities(
+        userId: String,
+        result: (UiState<List<AllCommunityModel>>) -> Unit
+    ) {
+        val allCommunityCollection = database.collection(Constant.COMMUNITIES)
+
+        allCommunityCollection
+            .whereEqualTo("userId", userId) // Adjust the field name as per your Firestore structure
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val communities = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(AllCommunityModel::class.java)
+                }
+                result(UiState.Success(communities))
+            }
+            .addOnFailureListener{
+                result.invoke(
+                    UiState.Failure(it.message ?: "An error occurred")
+                )
+            }
+
+    }
+
 
 
 

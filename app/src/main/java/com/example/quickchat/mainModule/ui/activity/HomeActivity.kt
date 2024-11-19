@@ -36,6 +36,15 @@ class HomeActivity : BaseActivity() {
                 }
                 else -> false
             }
+            when (item.itemId){
+                R.id.community->{
+                    val intent=Intent(this@HomeActivity,HomeActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+
+                else -> false
+            }
         }
 
 
