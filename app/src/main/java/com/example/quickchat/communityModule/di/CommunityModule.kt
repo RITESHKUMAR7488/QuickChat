@@ -3,6 +3,7 @@ package com.example.quickchat.communityModule.di
 import com.example.quickchat.communityModule.repositories.CommunityRepository
 import com.example.quickchat.communityModule.repositories.CommunityRepositoryImpl
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,8 +19,9 @@ class CommunityModule {
     @Singleton
     fun provideCommunityRepository(
         database: FirebaseFirestore,
+        storage: FirebaseStorage
 
         ): CommunityRepository {
-        return CommunityRepositoryImpl(database)
+        return CommunityRepositoryImpl(database,storage)
     }
 }
