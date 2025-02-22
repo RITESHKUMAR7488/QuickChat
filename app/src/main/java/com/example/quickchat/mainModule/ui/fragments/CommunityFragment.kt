@@ -1,19 +1,23 @@
+
+package com.example.quickchat.mainModule.ui.fragments
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.quickchat.communityModule.ui.activity.CreateCommunity
 import com.example.quickchat.databinding.FragmentComunityBinding
 import com.example.quickchat.mainModule.ui.adapters.GetAllCommunityAdapter
 import com.example.quickchat.mainModule.viewmodels.PostViewModel
+import com.example.quickchat.utility.BaseFragment
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ComunityFragment : Fragment() {
+class CommunityFragment : BaseFragment() {
 
     private var _binding: FragmentComunityBinding? = null
     private val binding get() = _binding!!
@@ -26,6 +30,7 @@ class ComunityFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         _binding = FragmentComunityBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -41,7 +46,7 @@ class ComunityFragment : Fragment() {
 
         // Floating Action Button click listener
         binding.btnCreate.setOnClickListener {
-            // Handle action to create a new community
+            startActivity(Intent(requireActivity(), CreateCommunity::class.java))
         }
     }
 
@@ -49,12 +54,12 @@ class ComunityFragment : Fragment() {
         adapter = GetAllCommunityAdapter(emptyList(), requireContext())
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = this@ComunityFragment.adapter
+            adapter = this@CommunityFragment.adapter
         }
     }
 
     private fun observeCommunities() {
-        postViewModel.getAllCommunities("userId") // Replace "userId" with the actual user ID
+        postViewModel.getAllCommunities(preferenceManager.userId.toString()) // Replace "userId" with the actual user ID
             .observe(viewLifecycleOwner) { state ->
                 when (state) {
                     is UiState.Loading -> {

@@ -40,6 +40,10 @@ class ChooseCommunity : BaseActivity() {
 
         // Initialize the binding object
         binding = DataBindingUtil.setContentView(this, R.layout.activity_choose_community)
+        supportActionBar?.apply {
+            title = "My App Title"  // Set title
+            setDisplayHomeAsUpEnabled(true)  // Enable back button
+        }
 
         // Fetch and display the list of communities
         fetchAndDisplayCommunities()

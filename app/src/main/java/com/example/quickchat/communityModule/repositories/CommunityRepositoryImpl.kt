@@ -2,6 +2,7 @@ package com.example.quickchat.communityModule.repositories
 
 import com.example.quickchat.communityModule.models.CommunityModels
 import com.example.quickchat.constants.Constant
+import com.example.quickchat.mainModule.models.PostModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.quickchat.utility.UiState
 
@@ -64,7 +65,39 @@ class CommunityRepositoryImpl(private val database: FirebaseFirestore) : Communi
 
 
     }
+
+    override fun getCommunityDetails(
+        communityId: String,
+        result: (UiState<CommunityModels>) -> Unit
+    ) {
+        database.collection(Constant.COMMUNITIES).document(communityId).get().addOnSuccessListener {
+            val community = it.toObject(CommunityModels::class.java)
+            community?.communityId = communityId
+            result.invoke(UiState.Success(community!!))
+        }.addOnFailureListener {
+            result.invoke(UiState.Failure(it.localizedMessage ?: "An error occurred"))
+
+        }
+        }
+
+    override fun getCommunityPosts(
+        communityId: String,
+        result: (UiState<List<PostModel>>) -> Unit
+    ) {
+        database.collection(Constant.COMMUNITIES).document(communityId).collection(Constant.MY_POST).get().addOnSuccessListener {
+            val postsList = arrayListOf<PostModel>()
+            for (document in it) {
+                val posts = document.toObject(PostModel::class.java)
+                posts.postId = document.id
+                postsList.add(posts)
+            }
+            result.invoke(UiState.Success(postsList))
+        }.addOnFailureListener {
+            result.invoke(UiState.Failure(it.localizedMessage ?: "An error occurred"))
+        }
+    }
 }
+
 
 
 

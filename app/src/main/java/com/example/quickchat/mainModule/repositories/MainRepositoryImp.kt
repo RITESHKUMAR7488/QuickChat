@@ -1,21 +1,37 @@
 package com.example.quickchat.mainModule.repositories
 
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.example.quickchat.constants.Constant
+import com.example.quickchat.mainModule.inteface.ImageUploadApi
 import com.example.quickchat.mainModule.models.AllCommunityModel
+import com.example.quickchat.mainModule.models.ImageUploadResponse
+import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.UiState
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
+import kotlin.random.Random
 
-class MainRepositoryImp(private val database: FirebaseFirestore) : RepositoryMain {
+class MainRepositoryImp(
+    private val database: FirebaseFirestore,
+    private val imageUploadApi: ImageUploadApi
+) : RepositoryMain {
     override fun addPost(
-        userId: String,
         communityId: String,
         model: PostModel,
         result: (UiState<PostModel>) -> Unit
     ) {
-        database.collection(Constant.USERS).document(userId).collection(Constant.MY_COMMUNITIES)
+        database.collection(Constant.COMMUNITIES)
             .document(communityId).collection(Constant.MY_POST).add(model)
             .addOnSuccessListener { documentReference ->
 
@@ -30,14 +46,14 @@ class MainRepositoryImp(private val database: FirebaseFirestore) : RepositoryMai
                             UiState.Success(model)
                         )
                     }
-                    .addOnFailureListener { e->
+                    .addOnFailureListener { e ->
                         result.invoke(
                             UiState.Failure(e.message ?: "An error occurred")
                         )
                     }
 
             }
-            .addOnFailureListener{
+            .addOnFailureListener {
                 result.invoke(
                     UiState.Failure(it.message ?: "An error occurred")
                 )
@@ -54,7 +70,7 @@ class MainRepositoryImp(private val database: FirebaseFirestore) : RepositoryMai
             .addOnSuccessListener { document ->
                 if (document.exists()) {
                     val userModel: UserModel? = document.toObject(UserModel::class.java)
-                    Log.d("nkss",userModel.toString())
+                    Log.d("nkss", userModel.toString())
                     result.invoke(UiState.Success(userModel))
                 } else {
                     Log.d("Firestore", "No such user found!")
@@ -82,7 +98,7 @@ class MainRepositoryImp(private val database: FirebaseFirestore) : RepositoryMai
                 }
                 result(UiState.Success(communities))
             }
-            .addOnFailureListener{
+            .addOnFailureListener {
                 result.invoke(
                     UiState.Failure(it.message ?: "An error occurred")
                 )
@@ -90,7 +106,99 @@ class MainRepositoryImp(private val database: FirebaseFirestore) : RepositoryMai
 
     }
 
+    override fun getAllPost(result: (UiState<List<MainPostModel>>) -> Unit) {
+        val postCollection = database.collection(Constant.POSTS)
+        val communityCollection = database.collection(Constant.COMMUNITIES)
 
+        val postTask = postCollection.get()
+        val communityTask = communityCollection.get()
 
+        Tasks.whenAllSuccess<QuerySnapshot>(postTask, communityTask)
+            .addOnSuccessListener { snapshots ->
+                try {
+                    val postSnapshot = snapshots[0] as QuerySnapshot
+                    val communitySnapshot = snapshots[1] as QuerySnapshot
+
+                    val posts = mutableListOf<MainPostModel>()
+                    val communities = mutableListOf<AllCommunityModel>()
+
+                    // Convert POSTS collection to MainPostModel.TypeOneItem
+                    for (doc in postSnapshot.documents) {
+                        val post = doc.toObject(PostModel::class.java)
+                        post?.let { posts.add(MainPostModel.TypeOneItem(it)) }
+                    }
+
+                    // Convert COMMUNITIES collection to a list
+                    for (doc in communitySnapshot.documents) {
+                        val community = doc.toObject(AllCommunityModel::class.java)
+                        community?.let { communities.add(it) }
+                    }
+
+                    // Prepare final list by inserting Community chunks after a random number of posts
+                    val finalList = mutableListOf<MainPostModel>()
+                    var index = 0
+
+                    while (index < posts.size) {
+                        // Generate a random chunk size between 6 and 10
+                        val chunkSize = Random.nextInt(6, 11)
+
+                        // Add posts in the random chunk size
+                        finalList.addAll(posts.subList(index, minOf(index + chunkSize, posts.size)))
+                        index += chunkSize
+
+                        // Add a chunk of communities (if available)
+                        if (communities.isNotEmpty()) {
+                            val communityChunk = communities.take(2) // Take 2 communities at a time
+                            finalList.add(MainPostModel.CommunityChunk(communityChunk))
+                            communities.subList(0, minOf(2, communities.size))
+                                .clear() // Remove used items
+                        }
+                    }
+
+                    result(UiState.Success(finalList))
+                } catch (e: Exception) {
+                    result(UiState.Failure(e.localizedMessage ?: "Error fetching data"))
+                }
+            }.addOnFailureListener { exception ->
+            result(UiState.Failure(exception.localizedMessage ?: "Error fetching data"))
+        }
+    }
+
+    override fun uploadImage(
+        imageFile: File,  // File to upload
+        apiKey: String,   // API key
+        data: MutableLiveData<ImageUploadResponse>,
+        error: MutableLiveData<Throwable>
+    ) {
+        // Create a RequestBody for the image file
+        val requestBody = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+        val imagePart = MultipartBody.Part.createFormData("source", imageFile.name, requestBody)
+
+        // Make the API call
+        imageUploadApi.uploadImage(apiKey, action = "upload", image = imagePart)
+            .enqueue(object : Callback<ImageUploadResponse> {
+                override fun onResponse(
+                    call: Call<ImageUploadResponse>,
+                    response: Response<ImageUploadResponse>
+                ) {
+                    Log.d("responsess", "Image uploaded successfully: ${response.body()}")
+                    if (response.isSuccessful && response.body() != null) {
+                        // Successfully received response
+                        data.value = response.body()
+                        Log.d("responsess", "Image uploaded successfully: ${response.body()?.image?.url}")
+                    } else {
+                        // Handle unsuccessful response
+                        Log.d("responsess", "Failed: ${response.message()}")
+                        data.value = null
+                    }
+                }
+
+                override fun onFailure(call: Call<ImageUploadResponse>, t: Throwable) {
+                    // Handle failure (e.g., network error)
+                    error.value = t
+                    Log.d("responsess", "Failed to upload image: ${t.message}")
+                }
+            })
+    }
 
 }

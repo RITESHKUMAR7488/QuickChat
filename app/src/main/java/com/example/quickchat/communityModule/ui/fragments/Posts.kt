@@ -2,21 +2,17 @@ package com.example.quickchat.communityModule.ui.fragments
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.ViewModelProvider
 import com.example.quickchat.R
 import com.example.quickchat.communityModule.ui.adapters.CommunityPostAdapter
 import com.example.quickchat.communityModule.viemodels.CommunityViewModel
 import com.example.quickchat.databinding.FragmentPostsBinding
 import com.example.quickchat.mainModule.models.PostModel
-import com.example.quickchat.mainModule.viewmodels.PostViewModel
 import com.example.quickchat.utility.BaseFragment
-import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,7 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class Posts (val communityId: String): BaseFragment() {
     private lateinit var list: List<PostModel>
     private lateinit var adapter: CommunityPostAdapter
-    private val communityViewModel: CommunityViewModel by viewModels()
+    private lateinit var  communityViewModel: CommunityViewModel
 
 
 
@@ -35,12 +31,15 @@ class Posts (val communityId: String): BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        communityViewModel= ViewModelProvider(this)[CommunityViewModel::class.java]
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_posts, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        Log.d("TAG", "getPosts: $communityId  ${preferenceManager.userId}")
         
         getPosts(communityId)
 
@@ -48,7 +47,8 @@ class Posts (val communityId: String): BaseFragment() {
 
     private fun getPosts(communityId: String) {
         // Fetch posts using the communityId
-        communityViewModel.getCommunityPost(preferenceManager.userId.toString(), communityId)
+        Log.d("TAG", "getPosts: $communityId  ${preferenceManager.userId}")
+        communityViewModel.getCommunityPost(communityId)
             .observe(viewLifecycleOwner) { state ->
                 when (state) {
                     is UiState.Loading -> {

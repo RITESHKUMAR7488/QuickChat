@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.example.quickchat"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.quickchat"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -60,12 +60,16 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
     implementation(libs.androidx.benchmark.common)
     implementation (libs.androidx.fragment.ktx)
     implementation(libs.play.services.fido)
     implementation(libs.play.services.fido)
     testImplementation(libs.junit)
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.glide)
+    implementation(libs.android.image.cropper)
+    implementation (libs.okhttp)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.hilt.android)

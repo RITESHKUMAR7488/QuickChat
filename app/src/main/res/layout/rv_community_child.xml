@@ -7,6 +7,7 @@
         android:orientation="vertical"
         android:layout_height="wrap_content">
         <androidx.cardview.widget.CardView
+            android:id="@+id/item"
             android:layout_width="386dp"
             android:layout_margin="10dp"
             android:layout_gravity="center"
@@ -33,7 +34,8 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/profileImage"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:src="@drawable/user"

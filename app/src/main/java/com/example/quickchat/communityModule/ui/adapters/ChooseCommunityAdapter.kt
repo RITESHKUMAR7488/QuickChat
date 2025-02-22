@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.quickchat.communityModule.models.CommunityModels
 import com.example.quickchat.databinding.RvCommunityChildBinding
 
@@ -34,6 +35,7 @@ class ChooseCommunityAdapter(
 
         // Set community name and description
         holder.binding.tvCommunityName.text = currentItem.communityName
+        Glide.with(context).load(currentItem.imageUrl).into(holder.binding.profileImage)
         holder.binding.tvDescription.text = currentItem.communityDescription
 
         // Set a click listener on the root view (CardView in this case)

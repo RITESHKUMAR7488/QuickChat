@@ -2,9 +2,12 @@ package com.example.quickchat.mainModule.ui.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.quickchat.communityModule.models.CommunityModels
 import com.example.quickchat.communityModule.ui.activity.CommunityDetail
 import com.example.quickchat.constants.Constant
@@ -15,7 +18,7 @@ import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
 
-class GetAllPostAdapter(private val items: List<MainPostModel>,private val context: Context) :
+class GetAllPostAdapter(private val items: List<MainPostModel>, private val context: Context) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -47,7 +50,7 @@ class GetAllPostAdapter(private val items: List<MainPostModel>,private val conte
 
             VIEW_TYPE_COMMUNITY_CHUNK -> {
                 val binding = ItemCommunityRecylerviewBinding.inflate(inflater, parent, false)
-                CommunityChunkViewHolder(binding,context)
+                CommunityChunkViewHolder(binding, context)
             }
 
             else -> throw IllegalArgumentException("Invalid view type")
@@ -70,6 +73,16 @@ class GetAllPostAdapter(private val items: List<MainPostModel>,private val conte
         fun bind(item: PostModel) {
             binding.tvUsername.text = item.detailModel?.firstname.toString()
             binding.tvDescription.text = item.description
+            binding.tvTitle.text = item.title
+            if (item.imageUrl==null) {
+                binding.postImage.visibility = View.GONE
+            } else {
+                binding.postImage.visibility = View.VISIBLE
+                Glide.with(binding.root.context).load(item.imageUrl.toString())
+                    .into(binding.postImage)
+            }
+
+
         }
     }
 
@@ -78,15 +91,22 @@ class GetAllPostAdapter(private val items: List<MainPostModel>,private val conte
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: CommunityModels) {
             binding.tvUsername.text = item.communityName
+            Log.d("communityimagesssssss", "onBindViewHolder: ${item.communityName}")
+            Glide.with(binding.root.context).load(item.imageUrl.toString()).into(binding.ivProfile)
+
         }
     }
 
     // ViewHolder for Community Chunks (Horizontal RecyclerView)
-    class CommunityChunkViewHolder(private val binding: ItemCommunityRecylerviewBinding,private val context: Context) :
+    class CommunityChunkViewHolder(
+        private val binding: ItemCommunityRecylerviewBinding,
+        private val context: Context
+    ) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(communities: List<AllCommunityModel>) {
-            val adapter = PostCommunityAdapter(communities,context)
+            val adapter = PostCommunityAdapter(communities, context)
+
 
             binding.communityRecyclerView.adapter = adapter
         }

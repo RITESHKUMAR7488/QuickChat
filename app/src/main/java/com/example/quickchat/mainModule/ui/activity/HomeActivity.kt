@@ -7,10 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 
 import com.example.quickchat.R
 import com.example.quickchat.communityModule.ui.activity.ChooseCommunity
 import com.example.quickchat.databinding.ActivityMain3Binding
+import com.example.quickchat.mainModule.ui.fragments.CommunityFragment
+import com.example.quickchat.mainModule.ui.fragments.HomeFragment
 import com.example.quickchat.mainModule.viewmodels.PostViewModel
 import com.example.quickchat.utility.BaseActivity
 import com.example.quickchat.utility.UiState
@@ -26,6 +29,9 @@ class HomeActivity : BaseActivity() {
         enableEdgeToEdge()
         binding= DataBindingUtil.setContentView(this,R.layout.activity_main3)
         getUSerDetails()
+
+        replaceFragment(HomeFragment())
+
         with(binding){bottomNavigationView.setOnNavigationItemSelectedListener { item ->
 
             when (item.itemId) {
@@ -34,17 +40,22 @@ class HomeActivity : BaseActivity() {
                     startActivity(intent)
                     true // Return true to indicate the selection was handled
                 }
-                else -> false
-            }
-            when (item.itemId){
+
                 R.id.community->{
-                    val intent=Intent(this@HomeActivity,HomeActivity::class.java)
-                    startActivity(intent)
+                    replaceFragment(CommunityFragment())
                     true
                 }
 
-                else -> false
+                R.id.home->{
+                    replaceFragment(HomeFragment())
+                    true
+                }
+                else -> {
+                    replaceFragment(HomeFragment())
+                    false
+                }
             }
+
         }
 
 
@@ -66,5 +77,12 @@ class HomeActivity : BaseActivity() {
             }
         }
 
+    }
+
+    fun replaceFragment(fragment: Fragment) {
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.frameLayout, fragment)
+        fragmentTransaction.addToBackStack(null) // Optional, if you want to keep the fragment in the back stack
+        fragmentTransaction.commit()
     }
 }

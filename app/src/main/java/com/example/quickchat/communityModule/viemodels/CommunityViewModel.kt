@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.quickchat.communityModule.models.CommunityModels
 import com.example.quickchat.communityModule.repositories.CommunityRepository
+import com.example.quickchat.mainModule.models.PostModel
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -30,6 +31,25 @@ class CommunityViewModel @Inject constructor(private val repository: CommunityRe
         val successData = MutableLiveData<UiState<List<CommunityModels>>>()
         successData.value = UiState.Loading
         repository.getCommunity(userId) {
+            successData.value = it
+        }
+        return successData
+
+    }
+    fun getCommunityDetails(communityId: String): LiveData<UiState<CommunityModels>> {
+        val successData = MutableLiveData<UiState<CommunityModels>>()
+        successData.value = UiState.Loading
+        repository.getCommunityDetails(communityId) {
+            successData.value = it
+        }
+        return successData
+
+    }
+
+    fun getCommunityPost(communityId: String): LiveData<UiState<List<PostModel>>> {
+        val successData = MutableLiveData<UiState<List<PostModel>>>()
+        successData.value = UiState.Loading
+        repository.getCommunityPosts(communityId) {
             successData.value = it
         }
         return successData
