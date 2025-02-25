@@ -51,7 +51,9 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.dash)
+    implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -62,6 +64,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.benchmark.common)
     implementation (libs.androidx.fragment.ktx)
+    implementation(libs.play.services.fido)
+    implementation(libs.play.services.fido)
     implementation(libs.play.services.fido)
     implementation(libs.play.services.fido)
     testImplementation(libs.junit)

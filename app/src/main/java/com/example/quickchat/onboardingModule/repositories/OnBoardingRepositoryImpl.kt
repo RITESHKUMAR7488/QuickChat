@@ -129,7 +129,7 @@ class OnBoardingRepositoryImpl(
         document.set(userModel).addOnSuccessListener {
             Log.d("succes", "succes2")
             result.invoke(
-                UiState.Success("User register successfully")
+                UiState.Success("com.example.quickchat.mainModule.models.User register successfully")
             )
         }.addOnFailureListener {
             UiState.Failure(it.localizedMessage)
@@ -166,7 +166,7 @@ class OnBoardingRepositoryImpl(
                         result(userDataResult)
                     }
                 } else {
-                    result(UiState.Failure("User ID is null"))
+                    result(UiState.Failure("com.example.quickchat.mainModule.models.User ID is null"))
                 }
             } else {
                 Log.e("auth", "Sign-in failed", task.exception)
@@ -185,7 +185,7 @@ class OnBoardingRepositoryImpl(
 
         val userId = auth.currentUser?.uid
         if (userId == null) {
-            result(UiState.Failure("User ID is null"))
+            result(UiState.Failure("com.example.quickchat.mainModule.models.User ID is null"))
             return
         }
 

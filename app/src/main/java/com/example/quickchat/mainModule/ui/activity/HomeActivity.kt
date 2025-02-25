@@ -14,6 +14,7 @@ import com.example.quickchat.communityModule.ui.activity.ChooseCommunity
 import com.example.quickchat.databinding.ActivityMain3Binding
 import com.example.quickchat.mainModule.ui.fragments.CommunityFragment
 import com.example.quickchat.mainModule.ui.fragments.HomeFragment
+import com.example.quickchat.mainModule.ui.fragments.ShortFragment
 import com.example.quickchat.mainModule.viewmodels.PostViewModel
 import com.example.quickchat.utility.BaseActivity
 import com.example.quickchat.utility.UiState
@@ -48,6 +49,11 @@ class HomeActivity : BaseActivity() {
 
                 R.id.home->{
                     replaceFragment(HomeFragment())
+                    true
+                }
+
+                R.id.shorts->{
+                    replaceFragment(ShortFragment())
                     true
                 }
                 else -> {

@@ -17,4 +17,6 @@ interface ImageUploadApi {
         @Query("action") action: String = "upload",
         @Part image: MultipartBody.Part
     ): Call<ImageUploadResponse>
+
+
 }

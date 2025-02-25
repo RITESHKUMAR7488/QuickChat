@@ -5,6 +5,7 @@ import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.ImageUploadResponse
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
+import com.example.quickchat.mainModule.models.VideoGetResponse
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.UiState
 import java.io.File
@@ -21,6 +22,10 @@ interface RepositoryMain {
         imageFile: File,
         apiKey: String,
         data: MutableLiveData<ImageUploadResponse>,
+        error: MutableLiveData<Throwable>
+    )
+    fun getVideo(
+        data: MutableLiveData<VideoGetResponse>,
         error: MutableLiveData<Throwable>
     )
 }

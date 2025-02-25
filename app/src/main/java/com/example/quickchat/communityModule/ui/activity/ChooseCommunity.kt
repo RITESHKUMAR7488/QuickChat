@@ -77,6 +77,8 @@ class ChooseCommunity : BaseActivity() {
                         setupRecyclerView()
                     }
                 }
+
+
             }
         })
     }

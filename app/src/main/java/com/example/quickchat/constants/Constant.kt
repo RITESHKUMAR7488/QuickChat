@@ -12,6 +12,7 @@ object Constant {
     const val MY_COMMUNITIES="MyCommunity"
     const val ADMIN="admin"
     const val BASE_URL_IMAGE_UPLOAD="https://freeimage.host"
+    const val BASE_URL_VIDEO_GET="https://api.pexels.com"
     const val MEMBER="member"
     const val MY_POST="post"
     const val POSTS="posts"

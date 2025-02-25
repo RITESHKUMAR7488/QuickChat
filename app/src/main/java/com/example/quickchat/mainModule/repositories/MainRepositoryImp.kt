@@ -4,10 +4,12 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.mainModule.inteface.ImageUploadApi
+import com.example.quickchat.mainModule.inteface.VideoGetApi
 import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.ImageUploadResponse
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
+import com.example.quickchat.mainModule.models.VideoGetResponse
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.UiState
 import com.google.android.gms.tasks.Tasks
@@ -24,8 +26,10 @@ import kotlin.random.Random
 
 class MainRepositoryImp(
     private val database: FirebaseFirestore,
-    private val imageUploadApi: ImageUploadApi
-) : RepositoryMain {
+    private val imageUploadApi: ImageUploadApi,
+    private val videoGetApi: VideoGetApi,
+
+    ) : RepositoryMain {
     override fun addPost(
         communityId: String,
         model: PostModel,
@@ -160,8 +164,8 @@ class MainRepositoryImp(
                     result(UiState.Failure(e.localizedMessage ?: "Error fetching data"))
                 }
             }.addOnFailureListener { exception ->
-            result(UiState.Failure(exception.localizedMessage ?: "Error fetching data"))
-        }
+                result(UiState.Failure(exception.localizedMessage ?: "Error fetching data"))
+            }
     }
 
     override fun uploadImage(
@@ -185,7 +189,10 @@ class MainRepositoryImp(
                     if (response.isSuccessful && response.body() != null) {
                         // Successfully received response
                         data.value = response.body()
-                        Log.d("responsess", "Image uploaded successfully: ${response.body()?.image?.url}")
+                        Log.d(
+                            "responsess",
+                            "Image uploaded successfully: ${response.body()?.image?.url}"
+                        )
                     } else {
                         // Handle unsuccessful response
                         Log.d("responsess", "Failed: ${response.message()}")
@@ -201,4 +208,33 @@ class MainRepositoryImp(
             })
     }
 
+    override fun getVideo(
+        data: MutableLiveData<VideoGetResponse>,
+        error: MutableLiveData<Throwable>
+    ) {
+
+        videoGetApi.getVideo().enqueue(object : Callback<VideoGetResponse?> {
+            override fun onResponse(
+                p0: Call<VideoGetResponse?>,
+                response: Response<VideoGetResponse?>
+            ) {
+                Log.d("VideoResponse1", "Failed: $response")
+                if (response.isSuccessful && response.body() != null) {
+                    data.value = response.body()
+
+                } else {
+                    data.value = null
+                    Log.d("VideoResponse", "Failed: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(p0: Call<VideoGetResponse?>, p1: Throwable) {
+                error.value = p1
+                Log.e("VideoResponse", "Error fetching videos: ${p1.message}")
+            }
+
+
+        })
+    }
 }
+

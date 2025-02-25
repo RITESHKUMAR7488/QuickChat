@@ -7,6 +7,7 @@ import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.ImageUploadResponse
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
+import com.example.quickchat.mainModule.models.VideoGetResponse
 import com.example.quickchat.mainModule.repositories.RepositoryMain
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.UiState
@@ -85,4 +86,30 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain) 
 
         return successData
     }
+
+    fun getAllVideo(): LiveData<UiState<VideoGetResponse>> {
+        val successData = MutableLiveData<UiState<VideoGetResponse>>()
+        successData.value = UiState.Loading
+
+        val data = MutableLiveData<VideoGetResponse>() // ✅ Change to List
+        val error = MutableLiveData<Throwable>()
+
+        repository.getVideo(data, error) // Ensure repository returns a List
+
+        data.observeForever { response ->
+            response?.let {
+                successData.value = UiState.Success(it)  // ✅ Store list in UiState
+            }
+        }
+
+        error.observeForever { throwable ->
+            throwable?.let {
+                successData.value = UiState.Failure(it.message ?: "Unknown error")
+            }
+        }
+
+        return successData
+    }
+
+
 }
