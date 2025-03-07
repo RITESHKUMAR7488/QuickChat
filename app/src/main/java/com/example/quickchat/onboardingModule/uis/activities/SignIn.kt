@@ -11,6 +11,7 @@ import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.databinding.ActivitySignInBinding
+import com.example.quickchat.mainModule.ui.activity.HomeActivity
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.onboardingModule.viewModels.OnBoardingViewModel
 import com.example.quickchat.utility.BaseActivity
@@ -80,7 +81,7 @@ class SignIn : BaseActivity() {
                             is UiState.Success -> {
                                 Log.d("states", it.data.toString())
                                 preferenceManager.isLoggedIn = true
-                                startActivity(Intent(this@SignIn, MainActivity::class.java))
+                                startActivity(Intent(this@SignIn, HomeActivity::class.java))
                                 finish()
                             }
                             is UiState.Failure -> Log.d("states", it.error.toString())
@@ -141,7 +142,7 @@ class SignIn : BaseActivity() {
 
                     preferenceManager.isGmailLoggedIn = true
                     preferenceManager.isLoggedIn = true
-                    startActivity(Intent(this@SignIn, MainActivity::class.java))
+                    startActivity(Intent(this@SignIn, HomeActivity::class.java))
                     finish()
 
                 }

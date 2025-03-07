@@ -2,6 +2,7 @@
 package com.example.quickchat.mainModule.ui.fragments
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -66,6 +67,7 @@ class CommunityFragment : BaseFragment() {
                         // Show loading indicator if needed
                     }
                     is UiState.Success -> {
+                        Log.d("Communities", state.data.toString())
                         // Update adapter with new data
                         adapter = GetAllCommunityAdapter(state.data, requireContext())
                         binding.recyclerView.adapter = adapter

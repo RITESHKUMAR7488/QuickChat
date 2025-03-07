@@ -35,7 +35,6 @@ class OnBoardingRepositoryImpl(
     ) {
         Log.d("statess", email+password)
         preferenceManager = PreferenceManager(context)
-
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
             Log.d("statess", auth.currentUser?.uid ?: "")
             userId = auth.currentUser?.uid ?: ""
@@ -121,6 +120,8 @@ class OnBoardingRepositoryImpl(
 
     override fun sendUserData( context: Context,userModel: UserModel, result: (UiState<String>) -> Unit) {
         Log.d("statess", "EnterHere")
+        preferenceManager = PreferenceManager(context)
+        userId=preferenceManager.userId.toString()
         val document = database.collection(Constant.USERS).document(userId)
         preferenceManager = PreferenceManager(context)
 
@@ -129,7 +130,7 @@ class OnBoardingRepositoryImpl(
         document.set(userModel).addOnSuccessListener {
             Log.d("succes", "succes2")
             result.invoke(
-                UiState.Success("com.example.quickchat.mainModule.models.User register successfully")
+                UiState.Success("register successfully")
             )
         }.addOnFailureListener {
             UiState.Failure(it.localizedMessage)

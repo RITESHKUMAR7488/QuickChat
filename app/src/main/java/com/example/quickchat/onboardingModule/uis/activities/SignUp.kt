@@ -11,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.databinding.ActivitySignUpBinding
+import com.example.quickchat.mainModule.ui.activity.HomeActivity
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.onboardingModule.viewModels.OnBoardingViewModel
 import com.example.quickchat.utility.BaseActivity
@@ -80,7 +81,7 @@ class SignUp : BaseActivity() {
                     is UiState.Success ->{
                         Log.d("states",it.data.toString())
                         preferenceManager.isLoggedIn=true
-                        val intent= Intent(this@SignUp, MainActivity::class.java)
+                        val intent= Intent(this@SignUp, HomeActivity::class.java)
                         startActivity(intent)
                         finish()
 

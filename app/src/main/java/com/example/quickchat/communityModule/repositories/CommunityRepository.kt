@@ -12,6 +12,13 @@ interface CommunityRepository {
     fun getCommunity(userId: String,result: (UiState<List<CommunityModels>>) -> Unit)
     fun getCommunityDetails(communityId: String,result: (UiState<CommunityModels>) -> Unit)
     fun getCommunityPosts(communityId: String,result: (UiState<List<PostModel>>) -> Unit)
+    fun updateCommunity(
+        userId: String,
+        communityId: String,
+        updatedModel: CommunityModels,
+        result: (UiState<CommunityModels>) -> Unit
+    )
+
 
 
 }

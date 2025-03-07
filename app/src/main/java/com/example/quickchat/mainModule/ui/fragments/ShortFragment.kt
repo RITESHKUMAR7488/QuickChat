@@ -68,8 +68,9 @@ class ShortFragment : BaseFragment() {
                 is UiState.Success -> {
                     val list=ArrayList<VideoFile>()
 
+
                     for (i in it.data.videos){
-                        list.addAll(i.videoFiles)
+                        list.add(i.videoFiles[0])
                     }
 
                     setUpRecyclerView(list)

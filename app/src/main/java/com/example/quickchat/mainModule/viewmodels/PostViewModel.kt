@@ -1,5 +1,6 @@
 package com.example.quickchat.mainModule.viewmodels
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,13 +11,17 @@ import com.example.quickchat.mainModule.models.PostModel
 import com.example.quickchat.mainModule.models.VideoGetResponse
 import com.example.quickchat.mainModule.repositories.RepositoryMain
 import com.example.quickchat.onboardingModule.models.UserModel
+import com.example.quickchat.onboardingModule.repositories.OnBoardingRepository
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
-class PostViewModel @Inject constructor(private val repository: RepositoryMain) : ViewModel() {
+class PostViewModel @Inject constructor(private val repository: RepositoryMain,
+    private val onBoardingRepository: OnBoardingRepository
+
+) : ViewModel() {
 
     // Existing methods for other actions
     private val data = MutableLiveData<ImageUploadResponse>()
@@ -108,6 +113,15 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain) 
             }
         }
 
+        return successData
+    }
+
+    fun updateUserDetail(context: Context, userModel: UserModel): LiveData<UiState<String>> {
+        val successData = MutableLiveData<UiState<String>>()
+        successData.value = UiState.Loading
+        onBoardingRepository.sendUserData(context, userModel) {
+            successData.value = it
+        }
         return successData
     }
 

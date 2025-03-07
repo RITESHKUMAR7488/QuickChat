@@ -8,4 +8,7 @@ data class UserModel(
     var firstName: String? = null,
     var lastName: String? = null,
     var password: String? = null,
+    var mobileNumber: String? = null,
+    var imageUrl: String? = null,
+    var address: String? = null,
     ) : Serializable

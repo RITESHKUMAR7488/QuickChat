@@ -14,6 +14,7 @@ import javax.inject.Inject
 class CommunityViewModel @Inject constructor(private val repository: CommunityRepository) :
     ViewModel() {
 
+    // Add a new community
     fun addCommunity(
         userId: String,
         model: CommunityModels,
@@ -27,6 +28,7 @@ class CommunityViewModel @Inject constructor(private val repository: CommunityRe
         return successData
     }
 
+    // Get all communities for a user
     fun getCommunity(userId: String): LiveData<UiState<List<CommunityModels>>> {
         val successData = MutableLiveData<UiState<List<CommunityModels>>>()
         successData.value = UiState.Loading
@@ -34,8 +36,9 @@ class CommunityViewModel @Inject constructor(private val repository: CommunityRe
             successData.value = it
         }
         return successData
-
     }
+
+    // Get details of a specific community
     fun getCommunityDetails(communityId: String): LiveData<UiState<CommunityModels>> {
         val successData = MutableLiveData<UiState<CommunityModels>>()
         successData.value = UiState.Loading
@@ -43,9 +46,9 @@ class CommunityViewModel @Inject constructor(private val repository: CommunityRe
             successData.value = it
         }
         return successData
-
     }
 
+    // Get posts for a specific community
     fun getCommunityPost(communityId: String): LiveData<UiState<List<PostModel>>> {
         val successData = MutableLiveData<UiState<List<PostModel>>>()
         successData.value = UiState.Loading
@@ -53,6 +56,19 @@ class CommunityViewModel @Inject constructor(private val repository: CommunityRe
             successData.value = it
         }
         return successData
+    }
 
+    // Update a community
+    fun updateCommunity(
+        userId: String,
+        communityId: String,
+        updatedModel: CommunityModels
+    ): LiveData<UiState<CommunityModels>> {
+        val successData = MutableLiveData<UiState<CommunityModels>>()
+        successData.value = UiState.Loading
+        repository.updateCommunity(userId,communityId, updatedModel) {
+            successData.value = it
+        }
+        return successData
     }
 }

@@ -1,10 +1,12 @@
 package com.example.quickchat.communityModule.repositories
 
+import android.util.Log
 import com.example.quickchat.communityModule.models.CommunityModels
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.mainModule.models.PostModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.quickchat.utility.UiState
+import com.google.firebase.firestore.SetOptions
 
 class CommunityRepositoryImpl(private val database: FirebaseFirestore) : CommunityRepository {
 
@@ -70,15 +72,30 @@ class CommunityRepositoryImpl(private val database: FirebaseFirestore) : Communi
         communityId: String,
         result: (UiState<CommunityModels>) -> Unit
     ) {
-        database.collection(Constant.COMMUNITIES).document(communityId).get().addOnSuccessListener {
-            val community = it.toObject(CommunityModels::class.java)
-            community?.communityId = communityId
-            result.invoke(UiState.Success(community!!))
-        }.addOnFailureListener {
-            result.invoke(UiState.Failure(it.localizedMessage ?: "An error occurred"))
-
-        }
-        }
+        Log.d("CommunityRepositoryImpl", "Fetching details for communityId: $communityId")
+        database.collection(Constant.COMMUNITIES)
+            .document(communityId)
+            .get()
+            .addOnSuccessListener { document ->
+                Log.d("CommunityRepositoryImpl", "Document: $document")
+                if (document.exists()) {
+                    val community = document.toObject(CommunityModels::class.java)
+                    Log.d("CommunityRepositoryImpl", "Parsed community: $community")
+                    if (community != null) {
+                        community.communityId = communityId
+                        result.invoke(UiState.Success(community))
+                    } else {
+                        result.invoke(UiState.Failure("Failed to parse community details"))
+                    }
+                } else {
+                    result.invoke(UiState.Failure("Community not found"))
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("CommunityRepositoryImpl", "Error fetching community details", exception)
+                result.invoke(UiState.Failure(exception.localizedMessage ?: "An error occurred"))
+            }
+    }
 
     override fun getCommunityPosts(
         communityId: String,
@@ -96,6 +113,34 @@ class CommunityRepositoryImpl(private val database: FirebaseFirestore) : Communi
             result.invoke(UiState.Failure(it.localizedMessage ?: "An error occurred"))
         }
     }
+
+    override fun updateCommunity(
+        userId: String,
+        communityId: String,
+        updatedModel: CommunityModels,
+        result: (UiState<CommunityModels>) -> Unit
+    ) {
+        updatedModel.userId=userId
+        updatedModel.communityId=communityId
+        database.collection(Constant.COMMUNITIES).document(communityId).set(updatedModel).addOnSuccessListener {
+            database.collection(Constant.USERS).document(userId).collection(Constant.MY_COMMUNITIES).document(communityId).set(updatedModel).addOnSuccessListener{
+                result.invoke(UiState.Success(updatedModel))
+            }.addOnFailureListener{
+                result.invoke(UiState.Failure(it.localizedMessage ?: "An error occurred"))
+
+
+            }
+
+
+
+        }.addOnFailureListener{
+            result.invoke(UiState.Failure(it.localizedMessage ?: "An error occurred"))
+
+        }
+
+    }
+
+
 }
 
 
