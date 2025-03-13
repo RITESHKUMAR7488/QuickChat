@@ -1,5 +1,6 @@
 package com.example.quickchat.mainModule.repositories
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.quickchat.constants.Constant
@@ -11,6 +12,7 @@ import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
 import com.example.quickchat.mainModule.models.VideoGetResponse
 import com.example.quickchat.onboardingModule.models.UserModel
+import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,6 +24,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import javax.inject.Inject
 import kotlin.random.Random
 
 class MainRepositoryImp(
@@ -30,6 +33,14 @@ class MainRepositoryImp(
     private val videoGetApi: VideoGetApi,
 
     ) : RepositoryMain {
+        private lateinit var userId: String
+        @Inject
+        lateinit var preferenceManager: PreferenceManager
+
+
+
+
+
     override fun addPost(
         communityId: String,
         model: PostModel,
@@ -236,5 +247,20 @@ class MainRepositoryImp(
 
         })
     }
+    override fun updateUser(userModel: UserModel, result: (UiState<UserModel>) -> Unit) {
+        val userId = userModel.uid ?: return result.invoke(UiState.Failure("User ID is null"))
+
+        database.collection(Constant.USERS)
+            .document(userId)
+            .set(userModel)
+            .addOnSuccessListener {
+                result.invoke(UiState.Success(userModel))
+            }
+            .addOnFailureListener { e ->
+                result.invoke(UiState.Failure(e.message ?: "Failed to update user"))
+            }
+    }
+
+
 }
 

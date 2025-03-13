@@ -60,31 +60,52 @@ class SignIn : BaseActivity() {
             txSignUp.setOnClickListener {
                 startActivity(Intent(this@SignIn, SignUp::class.java))
             }
-            btnGoogle.setOnClickListener { signInGoogle() }
+
         }
     }
 
     // Handle user login using email and password
     private fun login() {
         with(binding) {
+            Log.d("Logincccccc", "Login function called")
+
             when {
-                etMail.text.toString().isBlank() -> etMail.error = "Please enter email"
-                etPassword.text.toString().isBlank() -> etPassword.error = "Please enter password"
+                etMail.text.toString().isBlank() -> {
+                    Log.d("Login", "Email field is blank")
+                    etMail.error = "Please enter email"
+                }
+                etPassword.text.toString().isBlank() -> {
+                    Log.d("Login", "Password field is blank")
+                    etPassword.error = "Please enter password"
+                }
                 else -> {
                     val email = etMail.text.toString().trim()
                     val password = etPassword.text.toString().trim()
 
+                    Log.d("Logingseghaeh", "Attempting to log in with email: $email")
+
+                    // Call ViewModel to handle login
+                    Log.d("Logincuoi", "Calling onBoardingModel.loginUser")
                     onBoardingModel.loginUser(this@SignIn, email, password)
-                    onBoardingModel.reg.observe(this@SignIn) {
-                        when (it) {
-                            is UiState.Loading -> Log.d("statess", "Loading")
+
+                    // Observe the result of the login process
+                    onBoardingModel.reg.observe(this@SignIn) { state ->
+                        Log.d("jshdfjhse", state.toString())
+                        when (state) {
+                            is UiState.Loading -> {
+                                Log.d("Login", "Login in progress...")
+                            }
                             is UiState.Success -> {
-                                Log.d("states", it.data.toString())
+                                Log.d("Logingcvdtsdvb", "Login successful: ${state.data}")
+                                Log.d("Login", "Navigating to HomeActivity")
+
                                 preferenceManager.isLoggedIn = true
                                 startActivity(Intent(this@SignIn, HomeActivity::class.java))
                                 finish()
                             }
-                            is UiState.Failure -> Log.d("states", it.error.toString())
+                            is UiState.Failure -> {
+                                Log.e("Login", "Login failed: ${state.error}")
+                            }
                         }
                     }
                 }
@@ -112,18 +133,31 @@ class SignIn : BaseActivity() {
 
 
     private fun handleResult(completedTask: Task<GoogleSignInAccount>) {
+        Log.d("GoogleSignInhcfdjhf", "handleResult called")
+
         try {
+            Log.d("GoogleSignIn", "Attempting to get GoogleSignInAccount from task")
             val account: GoogleSignInAccount? = completedTask.getResult(ApiException::class.java)
+
             if (account != null) {
-                UpdateUI(account)
+                Log.d("GoogleSignIn", "GoogleSignInAccount successfully retrieved: ${account.email}")
+                updateUI(account)
+            } else {
+                Log.e("GoogleSignIn", "GoogleSignInAccount is null")
+                commonUtil.showToast("Google Sign-In failed: Account is null")
             }
         } catch (e: ApiException) {
-            commonUtil.showToast(e.toString())
+            Log.e("GoogleSignIn", "Google Sign-In failed with ApiException: ${e.message}", e)
+            commonUtil.showToast("Google Sign-In failed: ${e.message}")
+        } catch (e: Exception) {
+            Log.e("GoogleSignIn", "Google Sign-In failed with unexpected exception: ${e.message}", e)
+            commonUtil.showToast("Google Sign-In failed: ${e.message}")
         }
     }
 
 
-    private fun UpdateUI(account: GoogleSignInAccount) {
+    private fun updateUI(account: GoogleSignInAccount) {
+        Log.d("GoogleSignIndb", "UpdateUI called with account: ${account.email}")
 
         userModel = UserModel().apply {
             firstName = account.displayName
@@ -131,27 +165,36 @@ class SignIn : BaseActivity() {
         }
 
         // Call ViewModel to handle Google Sign-In
+        Log.d("GoogleSignIn", "Calling onBoardingModel.googleSignIn")
         onBoardingModel.googleSignIn(this, account, userModel)
-        onBoardingModel.gmail.observe(this) {
-            when (it) {
+
+        onBoardingModel.gmail.observe(this) { state ->
+            Log.d("GoogleSignIn", "Observed state: $state")
+            when (state) {
                 is UiState.Loading -> {
-
+                    Log.d("GoogleSignIn", "Google Sign-In in progress...")
                 }
-
                 is UiState.Success -> {
+                    Log.d("GoogleSignIn", "Google Sign-In successful: ${state.data}")
 
                     preferenceManager.isGmailLoggedIn = true
                     preferenceManager.isLoggedIn = true
+
+                    Log.d("GoogleSignIn", "Navigating to HomeActivity")
                     startActivity(Intent(this@SignIn, HomeActivity::class.java))
                     finish()
-
                 }
-
                 is UiState.Failure -> {
-                    commonUtil.showToast(it.error)
+                    Log.e("GoogleSignIn", "Google Sign-In failed: ${state.error}")
+                    commonUtil.showToast(state.error)
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.btnGoogle.setOnClickListener { signInGoogle() }
     }
 
 

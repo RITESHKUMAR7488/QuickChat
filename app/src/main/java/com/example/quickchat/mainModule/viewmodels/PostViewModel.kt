@@ -115,15 +115,16 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
 
         return successData
     }
-
-    fun updateUserDetail(context: Context, userModel: UserModel): LiveData<UiState<String>> {
-        val successData = MutableLiveData<UiState<String>>()
+    fun updateUser(userModel: UserModel): LiveData<UiState<UserModel>> {
+        val successData = MutableLiveData<UiState<UserModel>>()
         successData.value = UiState.Loading
-        onBoardingRepository.sendUserData(context, userModel) {
+        repository.updateUser(userModel) {
             successData.value = it
         }
         return successData
     }
+
+
 
 
 }

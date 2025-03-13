@@ -22,6 +22,7 @@ import com.example.quickchat.databinding.ActivityEditUserDetailBinding
 import com.example.quickchat.mainModule.viewmodels.PostViewModel
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.BaseActivity
+import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
@@ -33,6 +34,8 @@ class EditUserDetailActivity : BaseActivity() {
     private lateinit var binding: ActivityEditUserDetailBinding
     private val postViewModel: PostViewModel by viewModels()
     private var filePath: Uri? = null
+    lateinit var userId: String
+    lateinit var model: UserModel
 
     companion object {
         private const val CAMERA_PERMISSION_CODE = 100
@@ -45,11 +48,11 @@ class EditUserDetailActivity : BaseActivity() {
         enableEdgeToEdge()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_user_detail)
         with(binding) {
-            fetchUserData()
-            UpdateProfileButton.setOnClickListener {
-                setUser()
-            }
-            profileImage.setOnClickListener {
+             preferenceManager = PreferenceManager(this@EditUserDetailActivity)
+            userId = preferenceManager.userModel?.uid.toString()
+
+
+            binding.profileImage.setOnClickListener {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     checkPermission(Manifest.permission.READ_MEDIA_IMAGES, STORAGE_PERMISSION_CODE)
                 } else {
@@ -58,8 +61,25 @@ class EditUserDetailActivity : BaseActivity() {
             }
         }
     }
+    private fun fetchUserData() {
+        model= preferenceManager.userModel!!
+        val name = preferenceManager.userModel?.firstName
+        val email = preferenceManager.userModel?.email
+        val address = preferenceManager.userModel?.address
+        val mobile = preferenceManager.userModel?.mobileNumber
+        val profileImageUrl = preferenceManager.userModel?.imageUrl
+        binding.nameInput.setText(name)
+        binding.emailInput.setText(email)
+        binding.addressInput.setText(address)
+        binding.mobileInput.setText(mobile)
 
-    private fun setUser() {
+        profileImageUrl?.let { url ->
+            loadProfilePicture(url)
+        }
+
+    }
+
+    private fun updateUSer() {
         val name = binding.nameInput.text.toString()
         val email = binding.emailInput.text.toString()
 //        val password = binding.passwordInput.text.toString()
@@ -80,28 +100,34 @@ class EditUserDetailActivity : BaseActivity() {
         } else if (address.isBlank()) {
             binding.addressInput.error = "Please enter address"
         } else {
-            val model = UserModel()
-            model.email = email
-//            model.password = password
-            model.address = address
-            model.mobileNumber = mobile
-            model.firstName = name
+           model.apply {
+               this.firstName = name
+               this.email = email
+//               this.password = password
+               this.address = address
+               this.mobileNumber = mobile
+           }
 
             val file = filePath?.let { uriToFile(it) }
             val apiKey = "6d207e02198a847aa98d0a2a901485a5"
 
             if (file != null) {
                 postViewModel.uploadImage(file, apiKey).observe(this) { state ->
+                    Log.d("fohjfiwj", "State: $state")
                     when (state) {
+
                         is UiState.Loading -> {
                             Toast.makeText(this, "Image is Uploading...", Toast.LENGTH_SHORT).show()
                         }
                         is UiState.Success -> {
+                            Log.d("statesawefewstwe", state.data.toString())
                             val response = state.data
                             model.imageUrl = response.image?.url
 
-                            postViewModel.updateUserDetail(this, model).observe(this) {
+                            postViewModel.updateUser(model).observe(this) {
+                                Log.d("fohjfiwergej", "State: $it")
                                 when (it) {
+
                                     is UiState.Loading -> {
                                         Log.d("statess", "Loading")
                                     }
@@ -109,9 +135,9 @@ class EditUserDetailActivity : BaseActivity() {
                                         Log.d("states", it.error.toString())
                                     }
                                     is UiState.Success -> {
-                                        Log.d("states", it.data.toString())
-                                        val intent = Intent(this@EditUserDetailActivity, UserDetailActivity::class.java)
-                                        startActivity(intent)
+
+
+                                        onBackPressedDispatcher.onBackPressed()
                                         finish()
                                     }
                                 }
@@ -123,7 +149,7 @@ class EditUserDetailActivity : BaseActivity() {
                     }
                 }
             } else {
-                postViewModel.updateUserDetail(this, model).observe(this) {
+                postViewModel.updateUser(model).observe(this) {
                     when (it) {
                         is UiState.Loading -> {
                             Log.d("statess", "Loading")
@@ -133,8 +159,7 @@ class EditUserDetailActivity : BaseActivity() {
                         }
                         is UiState.Success -> {
                             Log.d("states", it.data.toString())
-                            val intent = Intent(this@EditUserDetailActivity, UserDetailActivity::class.java)
-                            startActivity(intent)
+                            onBackPressedDispatcher.onBackPressed()
                             finish()
                         }
                     }
@@ -143,22 +168,7 @@ class EditUserDetailActivity : BaseActivity() {
         }
     }
 
-    private fun fetchUserData() {
-        val name = preferenceManager.userModel?.firstName
-        val email = preferenceManager.userModel?.email
-        val address = preferenceManager.userModel?.address
-        val mobile = preferenceManager.userModel?.mobileNumber
-        val profileImageUrl = preferenceManager.userModel?.imageUrl
-        binding.nameInput.setText(name)
-        binding.emailInput.setText(email)
-        binding.addressInput.setText(address)
-        binding.mobileInput.setText(mobile)
 
-        profileImageUrl?.let { url ->
-            loadProfilePicture(url)
-        }
-
-    }
 
     private fun selectImage() {
         val intent = Intent()
@@ -239,4 +249,14 @@ class EditUserDetailActivity : BaseActivity() {
             .load(imageUrl)
             .into(binding.profileImage)
     }
+
+    override fun onResume() {
+        super.onResume()
+        binding.UpdateProfileButton.setOnClickListener {
+            updateUSer()
+        }
+        fetchUserData()
+
+    }
+
 }

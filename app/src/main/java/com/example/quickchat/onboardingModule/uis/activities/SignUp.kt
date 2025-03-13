@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -72,7 +73,7 @@ class SignUp : BaseActivity() {
 
             onBoardingModel.registerUser(this,email=email,passWord=password, model = model)
             onBoardingModel.reg.observe(this){
-                Log.d("registers",it.toString())
+                Log.d("registersfdcedf",it.toString())
                 when(it){
                     is UiState.Loading ->{
                         Log.d("statess","Loading")
@@ -87,6 +88,7 @@ class SignUp : BaseActivity() {
 
                     }
                     is UiState.Failure ->{
+                        Toast.makeText(this,it.error,Toast.LENGTH_SHORT).show()
                         Log.d("states",it.error.toString())
 
                     }

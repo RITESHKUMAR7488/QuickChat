@@ -118,23 +118,21 @@ class OnBoardingRepositoryImpl(
 
 
 
-    override fun sendUserData( context: Context,userModel: UserModel, result: (UiState<String>) -> Unit) {
-        Log.d("statess", "EnterHere")
-        preferenceManager = PreferenceManager(context)
-        userId=preferenceManager.userId.toString()
-        val document = database.collection(Constant.USERS).document(userId)
-        preferenceManager = PreferenceManager(context)
+    override fun sendUserData(context: Context, userModel: UserModel, result: (UiState<String>) -> Unit) {
+        Log.d("sendUserData", "Function entered")
 
-        userModel.uid=userId
-        preferenceManager.userId=userId
+        preferenceManager = PreferenceManager(context)
+        userId = preferenceManager.userId.toString()
+
+        val document = database.collection(Constant.USERS).document(userId)
+        userModel.uid = userId
+
         document.set(userModel).addOnSuccessListener {
-            Log.d("succes", "succes2")
-            result.invoke(
-                UiState.Success("register successfully")
-            )
-        }.addOnFailureListener {
-            UiState.Failure(it.localizedMessage)
-            Log.d("successs", it.localizedMessage.toString())
+            Log.d("sendUserData", "User data saved successfully")
+            result.invoke(UiState.Success("Registered successfully"))
+        }.addOnFailureListener { exception ->
+            Log.e("sendUserData", "Failed to save user data: ${exception.localizedMessage}")
+            result.invoke(UiState.Failure(exception.localizedMessage))
         }
     }
 

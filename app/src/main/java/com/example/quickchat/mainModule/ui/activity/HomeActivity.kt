@@ -44,6 +44,7 @@ class HomeActivity : BaseActivity() {
             auth = FirebaseAuth.getInstance()
             bottomNavigationView.setOnNavigationItemSelectedListener { item ->
                 when (item.itemId) {
+
                     R.id.Add -> {
                         val intent = Intent(this@HomeActivity, ChooseCommunity::class.java)
                         startActivity(intent)
@@ -83,7 +84,7 @@ class HomeActivity : BaseActivity() {
 
     }
 
-    fun getUSerDetails() {
+    private fun getUSerDetails() {
         Log.d("UserIDss",preferenceManager.userId.toString())
         preferenceManager.userId?.let {
             postViewModel.getDetails(it).observe(this) {
@@ -128,7 +129,7 @@ class HomeActivity : BaseActivity() {
         }
     }
 
-    fun replaceFragment(fragment: Fragment) {
+    private fun replaceFragment(fragment: Fragment) {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.frameLayout, fragment)
         fragmentTransaction.addToBackStack(null)

@@ -1,5 +1,6 @@
 package com.example.quickchat.mainModule.repositories
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.ImageUploadResponse
@@ -43,4 +44,6 @@ interface RepositoryMain {
         data: MutableLiveData<VideoGetResponse>,
         error: MutableLiveData<Throwable>
     )
+    fun updateUser(userModel: UserModel, result: (UiState<UserModel>) -> Unit)
+
 }
