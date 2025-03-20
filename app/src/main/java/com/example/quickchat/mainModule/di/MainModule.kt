@@ -3,6 +3,7 @@ package com.example.quickchat.mainModule.di
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.mainModule.inteface.ImageUploadApi
 import com.example.quickchat.mainModule.inteface.VideoGetApi
+import com.example.quickchat.mainModule.inteface.VideoUploadApi
 import com.example.quickchat.mainModule.repositories.MainRepositoryImp
 import com.example.quickchat.mainModule.repositories.RepositoryMain
 import com.google.firebase.firestore.FirebaseFirestore
@@ -37,6 +38,23 @@ class MainModule {
 
     @Singleton
     @Provides
+    @Named("VideoUploadRetrofit")
+    fun provideVideoUploadRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(Constant.BASE_URL_VIDEO_UPLOAD)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    @Singleton
+    @Provides
+    fun provideVideoUploadApi(@Named("VideoUploadRetrofit") retrofit: Retrofit): VideoUploadApi {
+        return retrofit.create(VideoUploadApi::class.java)
+    }
+
+
+
+    @Singleton
+    @Provides
     @Named("VideoRetrofit") // ✅ Naming the Retrofit instance for video API
     fun provideVideoRetrofit(): Retrofit {
         return Retrofit.Builder()
@@ -56,8 +74,9 @@ class MainModule {
     fun provideRepositoryMain(
         database: FirebaseFirestore,
         imageUploadApi: ImageUploadApi,
-        videoGetApi: VideoGetApi
+        videoGetApi: VideoGetApi,
+        videoUploadApi: VideoUploadApi
     ): RepositoryMain {
-        return MainRepositoryImp(database, imageUploadApi, videoGetApi)
+        return MainRepositoryImp(database, imageUploadApi, videoUploadApi, videoGetApi)
     }
 }

@@ -137,103 +137,11 @@ class CommunityDetail : BaseActivity() {
         super.onResume()
         setupThreeDotMenu()
         setCommunityDetails()
-        binding.profileImage.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                checkPermission(
-                    Manifest.permission.READ_MEDIA_IMAGES,
-                    CreateCommunity.STORAGE_PERMISSION_CODE
-                )
-            } else {
-                checkPermission(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    CreateCommunity.STORAGE_PERMISSION_CODE
-                )
-            }
-        }
+
     }
 
 
 
 
-    private fun selectImage() {
-        val intent = Intent()
-        intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT
-        startActivityForResult(Intent.createChooser(intent, "Select Image from here..."),
-            CreateCommunity.PICK_IMAGE_REQUEST
-        )
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == CreateCommunity.PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.data != null) {
-            filePath = data.data
-
-            Log.d("FilePathss", filePath.toString())
-
-            try {
-                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
-
-                binding.cropImageView.visibility = View.VISIBLE
-                binding.titleText.text = "Crop"
-                binding.rotate.visibility = View.VISIBLE
-                binding.done.visibility = View.VISIBLE
-                binding.cropImageView.setImageUriAsync(filePath)
-
-                binding.rotate.setOnClickListener {
-                    binding.cropImageView.rotateImage(90)
-                }
-                binding.done.setOnClickListener {
-
-                    binding.cropImageView.visibility = View.GONE
-                    binding.rotate.visibility = View.GONE
-                    binding.done.visibility = View.GONE
-                    binding.titleText.text = "Profile"
-                    val cropped: Bitmap? = binding.cropImageView.croppedImage
-                    filePath = cropped?.let { getUriFromBitmap(it) }
-                    binding.profileImage.setImageBitmap(cropped)
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    private fun getUriFromBitmap(bitmap: Bitmap): Uri {
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, ByteArrayOutputStream())
-        val path = MediaStore.Images.Media.insertImage(
-            this.contentResolver,
-            bitmap, System.currentTimeMillis().toString(), null
-        )
-        return Uri.parse(path)
-    }
-
-    private fun checkPermission(permission: String, requestCode: Int) {
-        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
-        } else {
-            selectImage()
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CreateCommunity.STORAGE_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                selectImage()
-            } else {
-                commonUtil.showToast("Storage Permission Denied")
-            }
-        }
-    }
-
-
-
-    private fun uriToFile(uri: Uri): File {
-        val inputStream = contentResolver.openInputStream(uri)
-        val file = File(cacheDir, "community_image.jpg")
-        file.outputStream().use { outputStream -> inputStream?.copyTo(outputStream) }
-        return file
-    }
 
 }

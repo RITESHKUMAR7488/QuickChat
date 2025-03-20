@@ -10,6 +10,7 @@ data class PostModel(
     var imageUrls: List<String>? = null,
     var detailModel: DetailModel?=null,
     var postId:String?=null,
-    var imageUrl: String? = null
+    var imageUrl: String? = null,
+    var likes: List<String>? = null,
 
 ):Serializable

@@ -202,6 +202,18 @@ class OnBoardingRepositoryImpl(
                 result(UiState.Failure(e.message ?: "Unknown error occurred"))
             }
     }
+    override fun resetPassword(email: String, result: (UiState<String>) -> Unit) {
+        result(UiState.Loading)
+
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    result(UiState.Success("Password reset email sent to $email"))
+                } else {
+                    result(UiState.Failure(task.exception?.message ?: "Failed to send reset email"))
+                }
+            }
+    }
 
 
 

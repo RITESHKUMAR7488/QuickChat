@@ -11,5 +11,7 @@ interface OnBoardingRepository {
     fun sendUserData( context: Context,userModel: UserModel, result:(UiState<String>)-> Unit )
     fun googleSignIn(context: Context, account: GoogleSignInAccount, userModel: UserModel, result:(UiState<String>)-> Unit )
     fun googleSignInSendUserData(context: Context,teacherModel: UserModel, result:(UiState<String>)-> Unit )
+    // Add this to your OnBoardingRepository.kt interface
+    fun resetPassword(email: String, result: (UiState<String>) -> Unit)
 
 }

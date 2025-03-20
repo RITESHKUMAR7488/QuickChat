@@ -25,6 +25,10 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
+import android.app.AlertDialog
+import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.EditText
 
 @AndroidEntryPoint
 class SignIn : BaseActivity() {
@@ -46,6 +50,7 @@ class SignIn : BaseActivity() {
 
 
 
+
         // Configure Google Sign-In options
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("1099197774188-k6m1ddg2juua5ofdl8a8f43p7p4opn6l.apps.googleusercontent.com")
@@ -59,6 +64,10 @@ class SignIn : BaseActivity() {
             btnSignin.setOnClickListener { login() }
             txSignUp.setOnClickListener {
                 startActivity(Intent(this@SignIn, SignUp::class.java))
+            }
+            binding.btnGoogle.setOnClickListener { signInGoogle() }
+            forgotPasswordText.setOnClickListener {
+                showForgotPasswordDialog()
             }
 
         }
@@ -115,6 +124,7 @@ class SignIn : BaseActivity() {
 
     // Initiate Google Sign-In process
     private fun signInGoogle() {
+        Log.d("GoogleSignIn", "Starting Google Sign-In process")
         val signIntent = mGoogleSignInClient.signInIntent
         launcher.launch(signIntent)
     }
@@ -157,22 +167,27 @@ class SignIn : BaseActivity() {
 
 
     private fun updateUI(account: GoogleSignInAccount) {
-        Log.d("GoogleSignIndb", "UpdateUI called with account: ${account.email}")
+        Log.d("GoogleSignIn", "UpdateUI called with account: ${account.email}")
 
         userModel = UserModel().apply {
-            firstName = account.displayName
-            email = account.email
+            firstName = account.displayName ?: "N/A"
+            lastName = account.familyName ?: "N/A"
+            email = account.email ?: "N/A"
+            // Ensure other required fields are set if needed
         }
 
-        // Call ViewModel to handle Google Sign-In
-        Log.d("GoogleSignIn", "Calling onBoardingModel.googleSignIn")
+        // Set a log to check if this is called
+        Log.d("GoogleSignIn", "About to call onBoardingModel.googleSignIn")
         onBoardingModel.googleSignIn(this, account, userModel)
 
+        // Add a log to verify observation setup
+        Log.d("GoogleSignIn", "Setting up observer for gmail LiveData")
         onBoardingModel.gmail.observe(this) { state ->
             Log.d("GoogleSignIn", "Observed state: $state")
             when (state) {
                 is UiState.Loading -> {
                     Log.d("GoogleSignIn", "Google Sign-In in progress...")
+                    // Consider showing a loading indicator here
                 }
                 is UiState.Success -> {
                     Log.d("GoogleSignIn", "Google Sign-In successful: ${state.data}")
@@ -192,9 +207,58 @@ class SignIn : BaseActivity() {
         }
     }
 
+    // Add this method to your SignIn.kt class
+    private fun showForgotPasswordDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_forgot_password, null)
+        val builder = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+
+        val alertDialog = builder.create()
+        alertDialog.show()
+
+        val emailEditText = dialogView.findViewById<EditText>(R.id.et_reset_email)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
+        val resetButton = dialogView.findViewById<Button>(R.id.btn_reset)
+
+        cancelButton.setOnClickListener {
+            alertDialog.dismiss()
+        }
+
+        resetButton.setOnClickListener {
+            val email = emailEditText.text.toString().trim()
+            if (email.isEmpty()) {
+                emailEditText.error = "Please enter your email"
+                return@setOnClickListener
+            }
+
+            // Call ViewModel to reset password
+            onBoardingModel.resetUserPassword(email)
+
+
+            // Observe the result
+            onBoardingModel.resetPassword.observe(this) { state ->
+                when (state) {
+                    is UiState.Loading -> {
+                        // Already showing loading
+                    }
+                    is UiState.Success -> {
+
+                        alertDialog.dismiss()
+                        commonUtil.showToast(state.data)
+                    }
+                    is UiState.Failure -> {
+                        
+                        commonUtil.showToast(state.error)
+                    }
+                }
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
-        binding.btnGoogle.setOnClickListener { signInGoogle() }
+
     }
 
 

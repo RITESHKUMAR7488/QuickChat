@@ -18,6 +18,8 @@ class OnBoardingViewModel @Inject constructor(private val repository: OnBoarding
     private val register= MutableLiveData<UiState<String>>()
     private val gMails=MutableLiveData<UiState<String>>()
     private val login=MutableLiveData<UiState<String>>()
+    private val _resetPassword = MutableLiveData<UiState<String>>()
+    val resetPassword: LiveData<UiState<String>> get() = _resetPassword
     val reg: LiveData<UiState<String>>
         get()=register
     val gmail:LiveData<UiState<String>>
@@ -39,6 +41,12 @@ class OnBoardingViewModel @Inject constructor(private val repository: OnBoarding
         gMails.value = UiState.Loading
         repository.googleSignIn(context, account, model) {
             gMails.value = it
+        }
+    }
+    fun resetUserPassword(email: String) {
+        _resetPassword.value = UiState.Loading
+        repository.resetPassword(email) {
+            _resetPassword.value = it
         }
     }
 

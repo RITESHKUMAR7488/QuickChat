@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.quickchat.R
 import com.example.quickchat.communityModule.models.CommunityModels
 import com.example.quickchat.communityModule.ui.activity.CommunityDetail
 import com.example.quickchat.constants.Constant
@@ -18,8 +19,11 @@ import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
 
-class GetAllPostAdapter(private val items: List<MainPostModel>, private val context: Context) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class GetAllPostAdapter(
+    private val items: List<MainPostModel>,
+    private val context: Context,
+    private val onLikeClickListener: (PostModel) -> Unit // Add a callback for like clicks
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
         private const val VIEW_TYPE_ONE = 1  // Single Post
@@ -68,21 +72,55 @@ class GetAllPostAdapter(private val items: List<MainPostModel>, private val cont
     override fun getItemCount(): Int = items.size
 
     // ViewHolder for Posts
-    class TypeOneViewHolder(private val binding: RvHomeChildBinding) :
+    inner class TypeOneViewHolder(private val binding: RvHomeChildBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         fun bind(item: PostModel) {
             binding.tvUsername.text = item.detailModel?.firstname.toString()
             binding.tvDescription.text = item.description
             binding.tvTitle.text = item.title
-            if (item.imageUrl==null) {
+
+            // Set initial like state
+            val isLiked = item.likes?.isNotEmpty() ?: false
+            updateLikeUI(isLiked, item.likes?.size ?: 0)
+
+            // Handle like button click
+            binding.like.setOnClickListener {
+                // Toggle the like state
+                val updatedLikes = item.likes?.toMutableList() ?: mutableListOf()
+                if (isLiked) {
+                    updatedLikes.removeAll { true } // Remove all likes (simplified for example)
+                } else {
+                    updatedLikes.add("user_id") // Add the current user's ID (replace with actual ID)
+                }
+
+                // Update the item's likes
+                item.likes = updatedLikes
+
+                // Notify the adapter of the change
+                notifyItemChanged(adapterPosition)
+
+                // Trigger the like click listener
+                onLikeClickListener(item)
+            }
+
+            // Load post image (if available)
+            if (item.imageUrl == null) {
                 binding.postImage.visibility = View.GONE
             } else {
                 binding.postImage.visibility = View.VISIBLE
                 Glide.with(binding.root.context).load(item.imageUrl.toString())
                     .into(binding.postImage)
             }
+        }
 
+        private fun updateLikeUI(isLiked: Boolean, likeCount: Int) {
+            // Update like icon
+            val likeIcon = if (isLiked) R.drawable.liked else R.drawable.like
+            binding.like.setImageResource(likeIcon)
 
+            // Update like count text
+            binding.NumberOfLikes.text = if (likeCount > 0) likeCount.toString() else "Like"
         }
     }
 
@@ -93,7 +131,6 @@ class GetAllPostAdapter(private val items: List<MainPostModel>, private val cont
             binding.tvUsername.text = item.communityName
             Log.d("communityimagesssssss", "onBindViewHolder: ${item.communityName}")
             Glide.with(binding.root.context).load(item.imageUrl.toString()).into(binding.ivProfile)
-
         }
     }
 
@@ -101,15 +138,11 @@ class GetAllPostAdapter(private val items: List<MainPostModel>, private val cont
     class CommunityChunkViewHolder(
         private val binding: ItemCommunityRecylerviewBinding,
         private val context: Context
-    ) :
-        RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(communities: List<AllCommunityModel>) {
             val adapter = PostCommunityAdapter(communities, context)
-
-
             binding.communityRecyclerView.adapter = adapter
         }
     }
 }
-

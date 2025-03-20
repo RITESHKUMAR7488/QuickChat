@@ -123,6 +123,27 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
         }
         return successData
     }
+    fun likePost(postId: String, userId: String): LiveData<UiState<PostModel>> {
+        val successData = MutableLiveData<UiState<PostModel>>()
+        successData.value = UiState.Loading
+
+        repository.likePost(postId, userId) { result ->
+            successData.value = result
+        }
+
+        return successData
+    }
+
+    fun unlikePost(postId: String, userId: String): LiveData<UiState<PostModel>> {
+        val successData = MutableLiveData<UiState<PostModel>>()
+        successData.value = UiState.Loading
+
+        repository.unlikePost(postId, userId) { result ->
+            successData.value = result
+        }
+
+        return successData
+    }
 
 
 

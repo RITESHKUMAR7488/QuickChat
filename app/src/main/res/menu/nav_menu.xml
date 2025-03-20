@@ -2,6 +2,10 @@
     <item
         android:id="@+id/action_settings"
         android:title="Settings"
-        android:icon="@drawable/setting_menu" />
+         />
+    <item
+        android:id="@+id/action_poster"
+        android:title="Edit Poster"
+         />
 
 </menu>

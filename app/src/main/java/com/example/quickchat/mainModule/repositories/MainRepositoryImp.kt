@@ -6,11 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.mainModule.inteface.ImageUploadApi
 import com.example.quickchat.mainModule.inteface.VideoGetApi
+import com.example.quickchat.mainModule.inteface.VideoUploadApi
 import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.ImageUploadResponse
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
 import com.example.quickchat.mainModule.models.VideoGetResponse
+import com.example.quickchat.mainModule.models.VideoUploadResponse
 import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
@@ -30,6 +32,7 @@ import kotlin.random.Random
 class MainRepositoryImp(
     private val database: FirebaseFirestore,
     private val imageUploadApi: ImageUploadApi,
+    private val videoUploadApi: VideoUploadApi,
     private val videoGetApi: VideoGetApi,
 
     ) : RepositoryMain {
@@ -260,6 +263,93 @@ class MainRepositoryImp(
                 result.invoke(UiState.Failure(e.message ?: "Failed to update user"))
             }
     }
+
+    override fun likePost(postId: String, userId: String, result: (UiState<PostModel>) -> Unit) {
+        val postRef = database.collection(Constant.POSTS).document(postId)
+
+        database.runTransaction { transaction ->
+            val snapshot = transaction.get(postRef)
+            val post = snapshot.toObject(PostModel::class.java)
+                ?: throw Exception("Post not found")
+
+            // Add the user's ID to the likes list
+            val updatedLikes = post.likes?.toMutableList() ?: mutableListOf()
+            if (!updatedLikes.contains(userId)) {
+                updatedLikes.add(userId)
+            }
+
+            // Update the post with the new likes list
+            transaction.update(postRef, "likes", updatedLikes)
+
+            // Return the updated post
+            post.copy(likes = updatedLikes)
+        }.addOnSuccessListener { updatedPost ->
+            result.invoke(UiState.Success(updatedPost))
+        }.addOnFailureListener { exception ->
+            result.invoke(UiState.Failure(exception.message ?: "Failed to like post"))
+        }
+    }
+
+    override fun unlikePost(postId: String, userId: String, result: (UiState<PostModel>) -> Unit) {
+        val postRef = database.collection(Constant.POSTS).document(postId)
+
+        database.runTransaction { transaction ->
+            val snapshot = transaction.get(postRef)
+            val post = snapshot.toObject(PostModel::class.java)
+                ?: throw Exception("Post not found")
+
+            // Remove the user's ID from the likes list
+            val updatedLikes = post.likes?.toMutableList() ?: mutableListOf()
+            updatedLikes.remove(userId)
+
+            // Update the post with the new likes list
+            transaction.update(postRef, "likes", updatedLikes)
+
+            // Return the updated post
+            post.copy(likes = updatedLikes)
+        }.addOnSuccessListener { updatedPost ->
+            result.invoke(UiState.Success(updatedPost))
+        }.addOnFailureListener { exception ->
+            result.invoke(UiState.Failure(exception.message ?: "Failed to unlike post"))
+        }
+    }
+
+    override fun uploadVideo(
+        videoFile: File,
+        apiKey: String,
+        data: MutableLiveData<VideoUploadResponse>,
+        error: MutableLiveData<Throwable>
+    ) {
+        // Create a RequestBody for the video file
+        val requestBody = videoFile.asRequestBody("video/mp4".toMediaTypeOrNull())
+        val videoPart = MultipartBody.Part.createFormData("video", videoFile.name, requestBody)
+
+        // Make the API call
+        videoUploadApi.uploadVideo(apiKey, action = "upload", video = videoPart)
+            .enqueue(object : Callback<VideoUploadResponse> {
+                override fun onResponse(
+                    call: Call<VideoUploadResponse>,
+                    response: Response<VideoUploadResponse>
+                ) {
+                    Log.d("VideoUpload", "Video uploaded successfully: ${response.body()}")
+                    if (response.isSuccessful && response.body() != null) {
+                        // Successfully received response
+                        data.value = response.body()
+                    } else {
+                        // Handle unsuccessful response
+                        Log.d("VideoUpload", "Failed: ${response.message()}")
+                        data.value = null
+                    }
+                }
+
+                override fun onFailure(call: Call<VideoUploadResponse>, t: Throwable) {
+                    // Handle failure (e.g., network error)
+                    error.value = t
+                    Log.e("VideoUpload", "Failed to upload video: ${t.message}")
+                }
+            })
+    }
+
 
 
 }

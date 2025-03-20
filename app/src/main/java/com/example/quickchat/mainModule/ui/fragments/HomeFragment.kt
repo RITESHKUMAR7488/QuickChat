@@ -20,22 +20,18 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class HomeFragment : BaseFragment() {
     private lateinit var adapter: GetAllPostAdapter
-    private lateinit var  postViewModel: PostViewModel
-    lateinit var binding: FragmentHomeBinding
-
-
-
+    private lateinit var postViewModel: PostViewModel
+    private lateinit var binding: FragmentHomeBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        postViewModel= ViewModelProvider(this)[PostViewModel::class.java]
-        binding=DataBindingUtil.inflate(inflater,R.layout.fragment_home, container, false)
+        postViewModel = ViewModelProvider(this)[PostViewModel::class.java]
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
         return binding.root
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -43,26 +39,42 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun setupRecyclerView(list: List<MainPostModel>) {
-        adapter = GetAllPostAdapter(list,requireActivity())
+        // Pass the onLikeClickListener callback to the adapter
+        adapter = GetAllPostAdapter(list, requireActivity()) { post ->
+            // Handle like action here
+            val currentUserId = preferenceManager.userId // Replace with the actual current user's ID
+            if (post.likes?.contains(currentUserId) == true) {
+                // Unlike the post
+                if (currentUserId != null) {
+                    postViewModel.unlikePost(post.postId!!, currentUserId)
+                }
+            } else {
+                // Like the post
+                if (currentUserId != null) {
+                    postViewModel.likePost(post.postId!!, currentUserId)
+                }
+            }
+        }
         binding.rvHomeMixed.adapter = adapter
-
-
     }
 
-    private fun getALlPostData(){
+    private fun getALlPostData() {
+        postViewModel.getAllPost().observe(viewLifecycleOwner) {
+            Log.d("datttttaaaholu", it.toString())
 
-        postViewModel.getAllPost().observe(viewLifecycleOwner){
-            Log.d("datttttaaaholu",it.toString())
-
-            when(it){
-                is UiState.Loading->{}
-                is UiState.Success->{
-                    Log.d("datttttaaaholu",it.data.toString())
+            when (it) {
+                is UiState.Loading -> {
+                    // Show loading state (e.g., show a progress bar)
+                }
+                is UiState.Success -> {
+                    Log.d("datttttaaaholu", it.data.toString())
                     setupRecyclerView(it.data)
                 }
-                is UiState.Failure->{}
+                is UiState.Failure -> {
+                    // Handle error (e.g., show a toast or error message)
+                    Log.e("HomeFragment", "Error fetching posts: ${it.error}")
+                }
             }
         }
     }
-
 }
