@@ -18,6 +18,7 @@ import com.example.quickchat.databinding.RvHomeProfileChildBinding
 import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
+import com.example.quickchat.onboardingModule.models.UserModel
 
 class GetAllPostAdapter(
     private val items: List<MainPostModel>,
@@ -79,6 +80,8 @@ class GetAllPostAdapter(
             binding.tvUsername.text = item.detailModel?.firstname.toString()
             binding.tvDescription.text = item.description
             binding.tvTitle.text = item.title
+            Glide.with(binding.root.context).load(item.userModels?.imageUrl.toString()).into(binding.imageView2)
+
 
             // Set initial like state
             val isLiked = item.likes?.isNotEmpty() ?: false

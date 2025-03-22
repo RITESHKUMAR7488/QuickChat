@@ -85,7 +85,14 @@ class CommunityDetail : BaseActivity() {
                     startActivity(intent)
                     true
                 }
-
+                R.id.action_poster -> {
+                    // Handle Edit Poster click
+                    val intent = Intent(this, UpdateCommunity::class.java)
+                    intent.putExtra("COMMUNITY_ID", communityId)
+                    intent.putExtra("EDIT_POSTER", true)
+                    startActivity(intent)
+                    true
+                }
                 else -> false
             }
         }

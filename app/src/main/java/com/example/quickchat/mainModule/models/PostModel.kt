@@ -1,5 +1,6 @@
 package com.example.quickchat.mainModule.models
 
+import com.example.quickchat.onboardingModule.models.UserModel
 import java.io.Serializable
 
 data class PostModel(
@@ -12,5 +13,6 @@ data class PostModel(
     var postId:String?=null,
     var imageUrl: String? = null,
     var likes: List<String>? = null,
+    var userModels: List<UserModel>? = null,
 
-):Serializable
+    ):Serializable
