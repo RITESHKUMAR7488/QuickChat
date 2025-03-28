@@ -62,6 +62,7 @@ class HomeActivity : BaseActivity() {
                         replaceFragment(ShortFragment())
                         true
                     }
+                    R.id.vha
                     else -> {
                         replaceFragment(HomeFragment())
                         false
@@ -113,7 +114,6 @@ class HomeActivity : BaseActivity() {
                         userEmail.text = preferenceManager.userModel?.email
 
 
-
                         val logout = hview.findViewById<View>(R.id.btn_signOut)
                         profileImage.setOnClickListener {
                             val intent = Intent(this, UserDetailActivity::class.java)
@@ -130,12 +130,15 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun replaceFragment(fragment: Fragment) {
+
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.frameLayout, fragment)
         fragmentTransaction.addToBackStack(null)
         fragmentTransaction.commit()
+
     }
     private fun logout() {
+
         // Sign out from Firebase
         auth.signOut()
 

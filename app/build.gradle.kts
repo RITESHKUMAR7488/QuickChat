@@ -73,6 +73,7 @@ dependencies {
     implementation (libs.converter.gson)
     implementation (libs.glide)
     implementation(libs.android.image.cropper)
+
     implementation (libs.okhttp)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -80,5 +81,11 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation (libs.circleimageview)
     implementation (libs.gson)
+    implementation(libs.stream.chat.android.ui.components) // Latest stable UI
+    implementation(libs.stream.chat.android.offline)      // Offline support
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.material.v190)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.coil)
 
 }

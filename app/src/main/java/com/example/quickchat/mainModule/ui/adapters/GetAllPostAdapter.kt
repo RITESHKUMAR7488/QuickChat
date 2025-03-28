@@ -80,7 +80,7 @@ class GetAllPostAdapter(
             binding.tvUsername.text = item.detailModel?.firstname.toString()
             binding.tvDescription.text = item.description
             binding.tvTitle.text = item.title
-            Glide.with(binding.root.context).load(item.userModels?.imageUrl.toString()).into(binding.imageView2)
+            Glide.with(binding.root.context).load(item.userModels?.firstOrNull()?.imageUrl.toString()).into(binding.imageView2)
 
 
             // Set initial like state
