@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.quickchat.constants.Constant
 import com.example.quickchat.onboardingModule.models.UserModel
+import com.example.quickchat.utility.FirebaseTokenHelper
 import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -33,50 +34,57 @@ class OnBoardingRepositoryImpl(
         userModel: UserModel,
         result: (UiState<String>) -> Unit
     ) {
-        Log.d("statess", email+password)
+        Log.d("Register", "Attempting to register user: $email")
+
         preferenceManager = PreferenceManager(context)
-        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
-            Log.d("statess", auth.currentUser?.uid ?: "")
-            userId = auth.currentUser?.uid ?: ""
-            Log.d("statess", it.toString())
 
-            preferenceManager.userId=userId
+        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val user = auth.currentUser
+                if (user != null) {
+                    userId = user.uid
+                    preferenceManager.userId = userId
 
-            if (it.isSuccessful) {
-                sendUserData(context,userModel) { state ->
-                    when (state) {
-                        is UiState.Success -> {
-                            result.invoke(UiState.Success("user register successfully"))
-                        }
-                        is UiState.Failure -> {
-                            result.invoke(UiState.Failure(state.error))
-                        }
-                        is UiState.Loading -> {
-                            result.invoke(UiState.Loading)
+                    Log.d("Register", "User registered with ID: $userId")
+
+                    // **Generate Firebase Token**
+                    user.getIdToken(true).addOnCompleteListener { tokenTask ->
+                        if (tokenTask.isSuccessful) {
+                            val idToken = tokenTask.result?.token
+                            if (idToken != null) {
+                                preferenceManager.tokenId = idToken
+                                Log.d("Register", "Token saved: $idToken")
+                            } else {
+                                Log.e("Register", "Token generation failed")
+                            }
+                        } else {
+                            Log.e("Register", "Error getting token", tokenTask.exception)
                         }
                     }
+
+                    // **Send user data to Firestore**
+                    sendUserData(context, userModel) { state ->
+                        when (state) {
+                            is UiState.Success -> {
+                                result.invoke(UiState.Success("User registered successfully"))
+                            }
+                            is UiState.Failure -> {
+                                result.invoke(UiState.Failure(state.error))
+                            }
+                            is UiState.Loading -> {
+                                result.invoke(UiState.Loading)
+                            }
+                        }
+                    }
+
+                } else {
+                    result.invoke(UiState.Failure("User is null after registration"))
                 }
 
-
-            } else {
-                try {
-                    throw it.exception ?: java.lang.Exception("invalid authentication")
-                } catch (e: FirebaseAuthWeakPasswordException) {
-                    result.invoke(UiState.Failure("Authentication failed, password must be at least 6 chracter"))
-                } catch (e: FirebaseAuthInvalidCredentialsException) {
-                    result.invoke(UiState.Failure("Authentication failed,Invalid email"))
-                } catch (e: FirebaseAuthUserCollisionException) {
-                    result.invoke(UiState.Failure("Authentication failed,Email already registered"))
-                } catch (e: Exception) {
-                    e.message?.let { it1 -> UiState.Failure(it1) }
-                        ?.let { it2 -> result.invoke(it2) }
-                }
             }
         }.addOnFailureListener {
-            it.localizedMessage?.let { it1 -> UiState.Failure(it1) }
-                ?.let { it2 -> result.invoke(it2) }
+            result.invoke(UiState.Failure(it.localizedMessage ?: "Registration failed"))
         }
-
     }
 
     override fun login(
@@ -86,35 +94,27 @@ class OnBoardingRepositoryImpl(
         result: (UiState<String>) -> Unit
     ) {
         preferenceManager = PreferenceManager(context)
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-            if(it.isSuccessful){
-                Log.d("userId",auth.currentUser!!.uid)
-                userId= auth.currentUser!!.uid
-                preferenceManager.userId=userId
-                Log.d("userId",preferenceManager.userId.toString())
-                result.invoke(UiState.Success("Login successfully"))
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                userId = auth.currentUser!!.uid
+                preferenceManager.userId = userId
 
-
-
-            }else {
-                try {
-                    throw it.exception ?: java.lang.Exception("invalid authentication")
-                } catch (e: FirebaseAuthWeakPasswordException) {
-                    result.invoke(UiState.Failure("Authentication failed, password must be at least 6 chracter"))
-                } catch (e: FirebaseAuthInvalidCredentialsException) {
-                    result.invoke(UiState.Failure("Authentication failed,Invalid email or password"))
-                } catch (e: FirebaseAuthUserCollisionException) {
-                    result.invoke(UiState.Failure("Authentication failed,Email already registered"))
-                } catch (e: Exception) {
-                    e.message?.let { it1 -> UiState.Failure(it1) }
-                        ?.let { it2 -> result.invoke(it2) }
+                // 🔹 Get JWT-like Firebase ID Token after login
+                FirebaseTokenHelper.getFirebaseIdToken { token ->
+                    if (token != null) {
+                        Log.d("JWT_TOKEN", "Firebase ID Token: $token")
+                        result.invoke(UiState.Success("Login successful with token: $token"))
+                    } else {
+                        result.invoke(UiState.Failure("Failed to get authentication token"))
+                    }
                 }
 
+            } else {
+                result.invoke(UiState.Failure("Authentication failed: ${task.exception?.message}"))
             }
-
         }
-
     }
+
 
 
 

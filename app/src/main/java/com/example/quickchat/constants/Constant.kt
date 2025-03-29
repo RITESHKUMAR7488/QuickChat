@@ -18,6 +18,7 @@ object Constant {
     const val MY_POST="post"
     const val POSTS="posts"
     const val USER_MODEL="UserModel"
+    const val TOKEN_ID="token"
 
 
 }

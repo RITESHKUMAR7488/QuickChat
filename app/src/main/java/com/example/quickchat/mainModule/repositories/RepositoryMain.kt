@@ -41,4 +41,6 @@ interface RepositoryMain {
     // New methods for like functionality
     fun likePost(postId: String, userId: String, result: (UiState<PostModel>) -> Unit)
     fun unlikePost(postId: String, userId: String, result: (UiState<PostModel>) -> Unit)
+    fun getAllUser(userId: String, result: (UiState<List<UserModel>>) -> Unit)
+
 }

@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide
 import com.example.quickchat.R
 import com.example.quickchat.communityModule.ui.activity.ChooseCommunity
 import com.example.quickchat.databinding.ActivityMain3Binding
+import com.example.quickchat.mainModule.ui.fragments.ChatFragment
 import com.example.quickchat.mainModule.ui.fragments.CommunityFragment
 import com.example.quickchat.mainModule.ui.fragments.HomeFragment
 import com.example.quickchat.mainModule.ui.fragments.ShortFragment
@@ -62,7 +63,10 @@ class HomeActivity : BaseActivity() {
                         replaceFragment(ShortFragment())
                         true
                     }
-                    R.id.vha
+                    R.id.chat -> {
+                        replaceFragment(ChatFragment())
+                        true
+                    }
                     else -> {
                         replaceFragment(HomeFragment())
                         false

@@ -14,4 +14,5 @@ interface OnBoardingRepository {
     // Add this to your OnBoardingRepository.kt interface
     fun resetPassword(email: String, result: (UiState<String>) -> Unit)
 
+
 }

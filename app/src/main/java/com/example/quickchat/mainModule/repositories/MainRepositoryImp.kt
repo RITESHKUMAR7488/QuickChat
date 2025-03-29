@@ -36,12 +36,10 @@ class MainRepositoryImp(
     private val videoGetApi: VideoGetApi,
 
     ) : RepositoryMain {
-        private lateinit var userId: String
-        @Inject
-        lateinit var preferenceManager: PreferenceManager
+    private lateinit var userId: String
 
-
-
+    @Inject
+    lateinit var preferenceManager: PreferenceManager
 
 
     override fun addPost(
@@ -221,6 +219,7 @@ class MainRepositoryImp(
                 }
             })
     }
+
     override fun getVideo(
         data: MutableLiveData<VideoGetResponse>,
         error: MutableLiveData<Throwable>
@@ -249,6 +248,7 @@ class MainRepositoryImp(
 
         })
     }
+
     override fun updateUser(userModel: UserModel, result: (UiState<UserModel>) -> Unit) {
         val userId = userModel.uid ?: return result.invoke(UiState.Failure("User ID is null"))
 
@@ -313,6 +313,7 @@ class MainRepositoryImp(
         }
     }
 
+
     override fun uploadVideo(
         videoFile: File,
         apiKey: String,
@@ -349,7 +350,24 @@ class MainRepositoryImp(
             })
     }
 
+    override fun getAllUser(userId: String, result: (UiState<List<UserModel>>) -> Unit) {
+        val usersCollection = database.collection(Constant.USERS)
+        usersCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                val users = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(UserModel::class.java)
+                }
+                result(UiState.Success(users))
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error fetching user details", e)
+                result.invoke(UiState.Failure(e.message ?: "An error occurred"))
 
 
+            }
+
+
+
+    }
 }
 

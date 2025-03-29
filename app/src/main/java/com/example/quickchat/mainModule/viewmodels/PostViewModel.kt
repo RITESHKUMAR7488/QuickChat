@@ -32,7 +32,7 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
     ): LiveData<UiState<PostModel>> {
         val successData = MutableLiveData<UiState<PostModel>>()
         successData.value = UiState.Loading
-        repository.addPost( communityId, model) {
+        repository.addPost(communityId, model) {
             successData.value = it
         }
         return successData
@@ -85,7 +85,8 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
 
         error.observeForever { throwable ->
             throwable?.let {
-                successData.value = UiState.Failure(it.message ?: "Unknown error")  // ✅ Handle errors
+                successData.value =
+                    UiState.Failure(it.message ?: "Unknown error")  // ✅ Handle errors
             }
         }
 
@@ -115,6 +116,7 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
 
         return successData
     }
+
     fun updateUser(userModel: UserModel): LiveData<UiState<UserModel>> {
         val successData = MutableLiveData<UiState<UserModel>>()
         successData.value = UiState.Loading
@@ -123,6 +125,7 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
         }
         return successData
     }
+
     fun likePost(postId: String, userId: String): LiveData<UiState<PostModel>> {
         val successData = MutableLiveData<UiState<PostModel>>()
         successData.value = UiState.Loading
@@ -145,7 +148,18 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
         return successData
     }
 
+    fun getAllUser(userId: String): LiveData<UiState<List<UserModel>>> {
+        val successData = MutableLiveData<UiState<List<UserModel>>>()
+        successData.value = UiState.Loading
+        repository.getAllUser(userId) {
+            successData.value = it
+        }
+        return successData
 
-
-
+    }
 }
+
+
+
+
+
