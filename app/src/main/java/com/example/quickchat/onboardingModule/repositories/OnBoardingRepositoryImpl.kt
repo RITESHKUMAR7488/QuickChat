@@ -45,20 +45,16 @@ class OnBoardingRepositoryImpl(
                     userId = user.uid
                     preferenceManager.userId = userId
 
-                    Log.d("Register", "User registered with ID: $userId")
+                    Log.d("Registessssr", "User registered with ID: $userId")
 
                     // **Generate Firebase Token**
-                    user.getIdToken(true).addOnCompleteListener { tokenTask ->
-                        if (tokenTask.isSuccessful) {
-                            val idToken = tokenTask.result?.token
-                            if (idToken != null) {
-                                preferenceManager.tokenId = idToken
-                                Log.d("Register", "Token saved: $idToken")
-                            } else {
-                                Log.e("Register", "Token generation failed")
-                            }
+                    FirebaseTokenHelper.getFirebaseIdToken { token ->
+                        if (token != null) {
+                            Log.d("JWT_TOKEN", "Firebase ID Token: $token")
+                            preferenceManager.tokenID=token
+                            result.invoke(UiState.Success("User registered successfully"))
                         } else {
-                            Log.e("Register", "Error getting token", tokenTask.exception)
+                            result.invoke(UiState.Failure("Failed to get authentication token"))
                         }
                     }
 
@@ -99,11 +95,14 @@ class OnBoardingRepositoryImpl(
                 userId = auth.currentUser!!.uid
                 preferenceManager.userId = userId
 
+                Log.d("Registessssr1", "User registered with ID: $userId")
+
                 // 🔹 Get JWT-like Firebase ID Token after login
                 FirebaseTokenHelper.getFirebaseIdToken { token ->
                     if (token != null) {
+                        preferenceManager.tokenID=token
                         Log.d("JWT_TOKEN", "Firebase ID Token: $token")
-                        result.invoke(UiState.Success("Login successful with token: $token"))
+                        result.invoke(UiState.Success("Login successfully"))
                     } else {
                         result.invoke(UiState.Failure("Failed to get authentication token"))
                     }

@@ -1,15 +1,21 @@
 package com.example.quickchat.mainModule.ui.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.example.quickchat.databinding.FragmentChatBinding
 import com.example.quickchat.mainModule.ui.activity.ChatActivity
+import com.example.quickchat.utility.BaseFragment
+import com.example.quickchat.utility.PreferenceManager
 import io.getstream.chat.android.client.ChatClient
+import io.getstream.chat.android.client.api.models.QueryUsersRequest
 import io.getstream.chat.android.client.logger.ChatLogLevel
 import io.getstream.chat.android.models.Filters
 import io.getstream.chat.android.models.User
@@ -19,8 +25,9 @@ import io.getstream.chat.android.state.plugin.factory.StreamStatePluginFactory
 import io.getstream.chat.android.ui.viewmodel.channels.ChannelListViewModel
 import io.getstream.chat.android.ui.viewmodel.channels.ChannelListViewModelFactory
 import io.getstream.chat.android.ui.viewmodel.channels.bindView
+import java.util.Date
 
-class ChatFragment : Fragment() {
+class ChatFragment :BaseFragment() {
 
     private var _binding: FragmentChatBinding? = null
     private val binding get() = _binding!!
@@ -36,7 +43,6 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Step 1 - Set up the OfflinePlugin for offline storage
         val offlinePluginFactory = StreamOfflinePluginFactory(requireContext())
         val statePluginFactory = StreamStatePluginFactory(
             config = StatePluginConfig(
@@ -46,47 +52,90 @@ class ChatFragment : Fragment() {
             appContext = requireContext(),
         )
 
-        // Step 2 - Set up the ChatClient
-        val client = ChatClient.Builder("uun7ywwamhs9", requireContext())
+        val client = ChatClient.Builder("rmfj6d9hddee", requireContext())
             .withPlugins(offlinePluginFactory, statePluginFactory)
             .logLevel(ChatLogLevel.ALL)
             .build()
 
-        // Step 3 - Authenticate and connect the user
+        val preferenceManager = PreferenceManager(requireContext())
         val user = User(
-            id = "tutorial-droid",
-            name = "Tutorial Droid",
-            image = "https://bit.ly/2TIt8NR"
+            id = preferenceManager.userId.toString(),
+            name = preferenceManager.userModel?.firstName.toString(),
+            image = preferenceManager.userModel?.imageUrl.toString()
         )
-        client.connectUser(
-            user = user,
-            token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidHV0b3JpYWwtZHJvaWQifQ.WwfBzU1GZr0brt_fXnqKdKhz3oj0rbDUm2DqJO_SS5U"
-        ).enqueue {
-            if (it.isSuccess) {
-                // Step 4 - Set the channel list filter
+
+        val token = generateJWT(preferenceManager.userId.toString(), "2tdtqr2gj6f49j2e5jdrjfkr6v2w4wynza6396xrm8guum5cp44bdf7naur94hr6")
+
+        Log.d("ChatFragmentsss12", "Token: $token")
+
+        client.connectUser(user, token).enqueue { result ->
+            if (result.isSuccess) {
+                Log.d("ChatFragment", "User connected successfully!")
+
                 val filter = Filters.and(
                     Filters.eq("type", "messaging"),
                     Filters.`in`("members", listOf(user.id))
                 )
-                val viewModelFactory =
-                    ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
+                val viewModelFactory = ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
                 val viewModel: ChannelListViewModel by viewModels { viewModelFactory }
 
-                // Step 5 - Bind the ViewModel to the ChannelListView
                 viewModel.bindView(binding.channelListView, viewLifecycleOwner)
                 binding.channelListView.setChannelItemClickListener { channel ->
-                    binding.channelListView.setChannelItemClickListener { channel ->
-                        startActivity(ChatActivity.newIntent(requireContext(), channel))
-                    }
+                    startActivity(ChatActivity.newIntent(requireContext(), channel))
                 }
+
+                // 🔹 Only fetch users after successful authentication
+                fetchUsers(client)
+
             } else {
+                Log.e("ChatFragment", "User connection failed: ${result}")
                 Toast.makeText(requireContext(), "Something went wrong!", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+
+    private fun fetchUsers(client: ChatClient) {
+        client.queryUsers(
+            QueryUsersRequest(
+                Filters.ne("id", ""), // Fetch all users
+                offset = 0,
+                limit = 50
+            )
+        ).enqueue { result ->
+            if (result.isSuccess) {
+                val users = result.getOrNull()
+                Log.d("ChatFragment", "Users found: ${users?.size}")
+
+                users?.forEach { user ->
+                    Log.d("ChatFragment", "User ID: ${user.id}, Name: ${user.name}, Image: ${user.image}")
+                }
+            } else {
+                Log.e("ChatFragment", "Error fetching users: ${result}")
+            }
+        }
+    }
+
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun generateJWT(userId: String, apiSecret: String, expirationInMinutes: Int? = null): String {
+        val algorithm = Algorithm.HMAC256(apiSecret)
+        val jwtBuilder = JWT.create()
+            .withIssuer("YourAppName")
+            .withSubject(userId)
+            .withClaim("user_id", userId)
+            .withIssuedAt(Date())
+
+        // Set expiration if provided
+        expirationInMinutes?.let {
+            val expirationDate = Date(System.currentTimeMillis() + it * 60 * 1000)
+            jwtBuilder.withExpiresAt(expirationDate)
+        }
+
+        return jwtBuilder.sign(algorithm)
     }
 }
