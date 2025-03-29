@@ -73,10 +73,11 @@ class PreferenceManager @Inject constructor(@ApplicationContext val context: Con
             editor.putString(Constant.USER_MODEL, json).apply()
         }
 
-    var tokenId: String?
-        get() = mPreferences.getString(Constant.TOKEN_ID, null)
-        set(value) {
-            mPreferences.edit().putString(Constant.TOKEN_ID, value).apply()
+    var tokenID: String?
+        get()= mPreferences.getString(Constant.TOKEN_ID,"")
+        set(tokenID){
+            editor.putString(Constant.TOKEN_ID,tokenID)
+            editor.commit()
         }
 
 

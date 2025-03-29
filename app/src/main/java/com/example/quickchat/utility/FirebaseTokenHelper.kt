@@ -12,6 +12,7 @@ object FirebaseTokenHelper {
                 if (task.isSuccessful) {
                     val idToken = task.result?.token
                     Log.d("FIREBASE_ID_TOKEN", "Generated Token: $idToken")
+
                     result(idToken)
                 } else {
                     Log.e("FIREBASE_ID_TOKEN", "Failed to generate token", task.exception)

@@ -9,7 +9,6 @@ import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import com.example.quickchat.MainActivity
 import com.example.quickchat.R
-import com.example.quickchat.constants.Constant
 import com.example.quickchat.databinding.ActivitySignInBinding
 import com.example.quickchat.mainModule.ui.activity.HomeActivity
 import com.example.quickchat.onboardingModule.models.UserModel
@@ -58,6 +57,8 @@ class SignIn : BaseActivity() {
             .requestEmail()
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+
+
 
         // Set up button click listeners
         with(binding) {

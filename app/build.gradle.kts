@@ -73,6 +73,8 @@ dependencies {
     implementation (libs.converter.gson)
     implementation (libs.glide)
     implementation(libs.android.image.cropper)
+    implementation("com.auth0.android:jwtdecode:2.0.2")   // For decoding JWT
+    implementation ("com.auth0:java-jwt:4.2.1") // For generating JWT
 
     implementation (libs.okhttp)
     androidTestImplementation(libs.androidx.junit)
