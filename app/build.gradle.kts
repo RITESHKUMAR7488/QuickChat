@@ -87,5 +87,9 @@ dependencies {
     implementation(libs.material.v190)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil)
+    implementation (libs.auth0)
+    implementation(libs.jwtdecode)
+    implementation(libs.jwtdecode.v202)   // For decoding JWT
+    implementation (libs.java.jwt) // For generating JWT
 
 }

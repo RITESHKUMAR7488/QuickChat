@@ -40,6 +40,9 @@
         android:theme="@style/Theme.QuickChat"
         tools:targetApi="31">
         <activity
+            android:name=".mainModule.ui.activity.NewChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".mainModule.ui.activity.ChatActivity"
             android:exported="false" />
         <activity
