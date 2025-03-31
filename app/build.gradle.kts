@@ -46,7 +46,7 @@ android {
     kapt {
         correctErrorTypes = true
     }
-    
+
 
 }
 
@@ -73,8 +73,8 @@ dependencies {
     implementation (libs.converter.gson)
     implementation (libs.glide)
     implementation(libs.android.image.cropper)
-    implementation("com.auth0.android:jwtdecode:2.0.2")   // For decoding JWT
-    implementation ("com.auth0:java-jwt:4.2.1") // For generating JWT
+    implementation(libs.jwtdecode.v202)   // For decoding JWT
+    implementation (libs.java.jwt) // For generating JWT
 
     implementation (libs.okhttp)
     androidTestImplementation(libs.androidx.junit)
@@ -89,9 +89,5 @@ dependencies {
     implementation(libs.material.v190)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil)
-    implementation (libs.auth0)
-    implementation(libs.jwtdecode)
-    implementation(libs.jwtdecode.v202)   // For decoding JWT
-    implementation (libs.java.jwt) // For generating JWT
 
 }
