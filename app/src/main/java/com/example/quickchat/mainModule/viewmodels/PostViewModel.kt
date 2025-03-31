@@ -148,15 +148,16 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
         return successData
     }
 
-    fun getAllUser(userId: String): LiveData<UiState<List<UserModel>>> {
-        val successData = MutableLiveData<UiState<List<UserModel>>>()
-        successData.value = UiState.Loading
-        repository.getAllUser(userId) {
-            successData.value = it
-        }
-        return successData
+    private val _users = MutableLiveData<UiState<List<UserModel>>>()
+    val users: LiveData<UiState<List<UserModel>>> get() = _users
 
+    fun getAllUser(userId: String) {
+        _users.value = UiState.Loading
+        repository.getAllUser(userId) {
+            _users.value = it
+        }
     }
+
 }
 
 

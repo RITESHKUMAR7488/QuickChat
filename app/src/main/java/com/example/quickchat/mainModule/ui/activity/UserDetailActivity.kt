@@ -8,7 +8,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
-import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.databinding.ActivityUserDetailBinding
 import com.example.quickchat.mainModule.viewmodels.PostViewModel

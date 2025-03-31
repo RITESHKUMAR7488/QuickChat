@@ -9,7 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.databinding.ActivitySignUpBinding
 import com.example.quickchat.mainModule.ui.activity.HomeActivity

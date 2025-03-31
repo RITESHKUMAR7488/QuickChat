@@ -9,38 +9,35 @@ import com.bumptech.glide.Glide
 import com.example.quickchat.databinding.ItemUserBinding
 import com.example.quickchat.onboardingModule.models.UserModel
 
-class UserAdapter(
-    private val list: List<UserModel>,
-    private val context: Context,
-    private val onClick: (UserModel) -> Unit
-) : RecyclerView.Adapter<UserAdapter.ViewHolder>() {
+class UserAdapter(private var users: List<UserModel>, private val context: Context, private val onUserClick: (UserModel) -> Unit) :
+    RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding =
-            ItemUserBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
+    fun updateData(newUsers: List<UserModel>) {
+        users = newUsers
+        notifyDataSetChanged()
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val currentUser = list[position]
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
+        val binding = ItemUserBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return UserViewHolder(binding)
+    }
 
-        // Set user name
-        holder.binding.tvUsername.text = "${currentUser.firstName} ${currentUser.lastName}"
+    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+        val user = users[position]
+        holder.bind(user)
+    }
 
-        // Load user profile image (fallback to default image)
-        Glide.with(holder.binding.root.context)
-            .load(currentUser.imageUrl ?: "https://bit.ly/2TIt8NR")
-            .into(holder.binding.ivProfile)
+    override fun getItemCount(): Int = users.size
 
-        // Click listener for starting chat
-        holder.binding.root.setOnClickListener {
-            onClick(currentUser)
+    inner class UserViewHolder(private val binding: ItemUserBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(user: UserModel) {
+            binding.tvUsername.text = user.firstName
+            Glide.with(binding.ivProfile.context).load(user.imageUrl).into(binding.ivProfile)
+
+            binding.root.setOnClickListener {
+                onUserClick(user)
+            }
         }
     }
-
-    override fun getItemCount(): Int {
-        return list.size
-    }
-
-    class ViewHolder(val binding: ItemUserBinding) : RecyclerView.ViewHolder(binding.root)
 }

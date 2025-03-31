@@ -7,7 +7,6 @@ import android.os.Looper
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.example.quickchat.MainActivity
 import com.example.quickchat.R
 import com.example.quickchat.databinding.ActivitySplashScreenBinding
 import com.example.quickchat.mainModule.ui.activity.HomeActivity

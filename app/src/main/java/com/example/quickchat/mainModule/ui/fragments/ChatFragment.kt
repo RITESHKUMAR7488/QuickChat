@@ -1,5 +1,6 @@
 package com.example.quickchat.mainModule.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.quickchat.databinding.FragmentChatBinding
 import com.example.quickchat.mainModule.ui.activity.ChatActivity
+import com.example.quickchat.mainModule.ui.activity.NewChatActivity
 import com.example.quickchat.utility.BaseFragment
 import com.example.quickchat.utility.PreferenceManager
 import io.getstream.chat.android.client.ChatClient
@@ -44,6 +46,7 @@ class ChatFragment :BaseFragment() {
 
 
         binding.btnCreate.setOnClickListener{
+            startActivity(Intent(requireContext(), NewChatActivity::class.java))
 
         }
 
