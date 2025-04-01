@@ -29,10 +29,11 @@ import io.getstream.chat.android.ui.viewmodel.channels.ChannelListViewModelFacto
 import io.getstream.chat.android.ui.viewmodel.channels.bindView
 import java.util.Date
 
-class ChatFragment :BaseFragment() {
+class ChatFragment : BaseFragment() {
 
     private var _binding: FragmentChatBinding? = null
     private val binding get() = _binding!!
+    private lateinit var localPreferenceManager: PreferenceManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,14 +44,13 @@ class ChatFragment :BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-
-        binding.btnCreate.setOnClickListener{
-            startActivity(Intent(requireContext(), NewChatActivity::class.java))
-
-        }
-
         super.onViewCreated(view, savedInstanceState)
+
+        localPreferenceManager = PreferenceManager(requireContext())
+
+        binding.btnCreate.setOnClickListener {
+            startActivity(Intent(requireContext(), NewChatActivity::class.java))
+        }
 
         val offlinePluginFactory = StreamOfflinePluginFactory(requireContext())
         val statePluginFactory = StreamStatePluginFactory(
@@ -66,14 +66,13 @@ class ChatFragment :BaseFragment() {
             .logLevel(ChatLogLevel.ALL)
             .build()
 
-        val preferenceManager = PreferenceManager(requireContext())
         val user = User(
-            id = preferenceManager.userId.toString(),
-            name = preferenceManager.userModel?.firstName.toString(),
-            image = preferenceManager.userModel?.imageUrl.toString()
+            id = localPreferenceManager.userId.toString(),
+            name = localPreferenceManager.userModel?.firstName.toString(),
+            image = localPreferenceManager.userModel?.imageUrl.toString()
         )
 
-        val token = generateJWT(preferenceManager.userId.toString(), "2tdtqr2gj6f49j2e5jdrjfkr6v2w4wynza6396xrm8guum5cp44bdf7naur94hr6")
+        val token = generateJWT(localPreferenceManager.userId.toString(), "2tdtqr2gj6f49j2e5jdrjfkr6v2w4wynza6396xrm8guum5cp44bdf7naur94hr6")
 
         Log.d("ChatFragmentsss12", "Token: $token")
 
@@ -83,7 +82,7 @@ class ChatFragment :BaseFragment() {
 
                 val filter = Filters.and(
                     Filters.eq("type", "messaging"),
-                    Filters.contains("members", user.id) // Changed `in` to `contains`
+                    Filters.contains("members", user.id)
                 )
 
                 val viewModelFactory = ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
@@ -94,9 +93,7 @@ class ChatFragment :BaseFragment() {
                     startActivity(ChatActivity.newIntent(requireContext(), channel))
                 }
 
-
                 fetchUsers(client)
-
             } else {
                 Log.e("ChatFragment", "User connection failed: ${result}")
                 Toast.makeText(requireContext(), "Something went wrong!", Toast.LENGTH_SHORT).show()
@@ -104,11 +101,24 @@ class ChatFragment :BaseFragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        // Use the localPreferenceManager instead of the base class's preferenceManager
+        val filter = Filters.and(
+            Filters.eq("type", "messaging"),
+            Filters.contains("members", localPreferenceManager.userId.toString())
+        )
+
+        val viewModelFactory = ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
+        val viewModel: ChannelListViewModel by viewModels { viewModelFactory }
+        viewModel.bindView(binding.channelListView, viewLifecycleOwner)
+    }
 
     private fun fetchUsers(client: ChatClient) {
         client.queryUsers(
             QueryUsersRequest(
-                Filters.ne("id", ""), // Fetch all users
+                Filters.ne("id", ""),
                 offset = 0,
                 limit = 50
             )
@@ -126,7 +136,6 @@ class ChatFragment :BaseFragment() {
         }
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -140,7 +149,6 @@ class ChatFragment :BaseFragment() {
             .withClaim("user_id", userId)
             .withIssuedAt(Date())
 
-        // Set expiration if provided
         expirationInMinutes?.let {
             val expirationDate = Date(System.currentTimeMillis() + it * 60 * 1000)
             jwtBuilder.withExpiresAt(expirationDate)
