@@ -54,18 +54,19 @@ class NewChatActivity : BaseActivity() {
             return
         }
 
-        // Create a sorted channel ID to ensure consistency
+        // Create a direct message channel ID
         val channelId = listOf(currentUserId, otherUserId)
             .sorted()
-            .joinToString("-")
+            .joinToString("_dm_") // Using a convention that clearly indicates direct message
 
         val client = ChatClient.instance()
 
-        // Channel data
+        // Channel data specifically for direct messaging
         val channelData = mapOf(
-            "name" to (otherUser.firstName ?: "Chat"),
-            "image" to (otherUser.imageUrl ?: ""),
-            "members" to listOf(currentUserId, otherUserId)
+            // Don't use "name" for direct messages as it makes it look like a group
+            // Instead, use custom fields that indicate this is a direct message
+            "members" to listOf(currentUserId, otherUserId),
+            "is_direct_message" to true
         )
 
         client.createChannel(
@@ -75,21 +76,15 @@ class NewChatActivity : BaseActivity() {
             extraData = channelData
         ).enqueue { result ->
             if (result.isSuccess) {
-                // Correct way to get the channel from the result
                 val channel = result.getOrNull()
                 if (channel != null) {
-                    println("Channel created successfully: ${channel.cid}")
                     startActivity(ChatActivity.newIntent(this, channel))
                     finish()
                 } else {
-                    val error = "Channel is null despite success"
-                    println(error)
-                    Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Failed to create conversation", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                // Correct way to get the error
                 val error = result.errorOrNull()?.message ?: "Unknown error"
-                println("Failed to create channel: $error")
                 Toast.makeText(this, "Failed: $error", Toast.LENGTH_SHORT).show()
             }
         }

@@ -31,14 +31,17 @@ android {
             )
         }
     }
-    buildFeatures{
-        dataBinding=true
-        viewBinding=true
+
+    buildFeatures {
+        dataBinding = true
+        viewBinding = true
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -46,48 +49,61 @@ android {
     kapt {
         correctErrorTypes = true
     }
-
-
 }
 
 dependencies {
+    // AndroidX
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.ktx)
+
+    // Google Play Services
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.fido)
+
+    // Firebase
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
+    // UI & Material Components
+    implementation(libs.material)
+    implementation(libs.material.v190)
+    implementation(libs.circleimageview)
+
+    // Media & Image Processing
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.ui)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation (libs.play.services.auth)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.androidx.benchmark.common)
-    implementation (libs.androidx.fragment.ktx)
-    implementation(libs.play.services.fido)
-    implementation(libs.play.services.fido)
-    implementation(libs.play.services.fido)
-    implementation(libs.play.services.fido)
-    testImplementation(libs.junit)
-    implementation (libs.retrofit)
-    implementation (libs.converter.gson)
-    implementation (libs.glide)
     implementation(libs.android.image.cropper)
-    implementation(libs.jwtdecode.v202)   // For decoding JWT
-    implementation (libs.java.jwt) // For generating JWT
+    implementation(libs.glide)
+    implementation(libs.coil)
 
-    implementation (libs.okhttp)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // Networking & JSON
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.gson)
+    implementation(libs.okhttp)
+
+    // JWT Authentication
+    implementation(libs.jwtdecode.v202)  // Decoding JWT
+    implementation(libs.java.jwt)        // Generating JWT
+
+    // Stream Chat SDK
+    implementation(libs.stream.chat.android.ui.components) // UI components
+    implementation(libs.stream.chat.android.offline)       // Offline support
+
+    // Dependency Injection
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
-    implementation (libs.circleimageview)
-    implementation (libs.gson)
-    implementation(libs.stream.chat.android.ui.components) // Latest stable UI
-    implementation(libs.stream.chat.android.offline)      // Offline support
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.material.v190)
-    implementation(libs.androidx.activity.ktx)
-    implementation(libs.coil)
+
+    // Testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.stream.chat.android.ui.components)
+    implementation(libs.stream.chat.android.offline)
 
 }

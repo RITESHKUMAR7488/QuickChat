@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -19,11 +20,17 @@ import com.example.quickchat.utility.PreferenceManager
 import io.getstream.chat.android.client.ChatClient
 import io.getstream.chat.android.client.api.models.QueryUsersRequest
 import io.getstream.chat.android.client.logger.ChatLogLevel
+import io.getstream.chat.android.models.Channel
 import io.getstream.chat.android.models.Filters
 import io.getstream.chat.android.models.User
 import io.getstream.chat.android.offline.plugin.factory.StreamOfflinePluginFactory
 import io.getstream.chat.android.state.plugin.config.StatePluginConfig
 import io.getstream.chat.android.state.plugin.factory.StreamStatePluginFactory
+import io.getstream.chat.android.ui.feature.channels.list.viewholder.BaseChannelListItemViewHolder
+import io.getstream.chat.android.ui.feature.channels.list.viewholder.ChannelListItemViewHolder
+import io.getstream.chat.android.ui.feature.channels.list.viewholder.factory.ChannelListItemViewHolderFactory
+import io.getstream.chat.android.ui.feature.channels.list.ChannelListItemView
+import io.getstream.chat.android.ui.feature.avatar.AvatarView
 import io.getstream.chat.android.ui.viewmodel.channels.ChannelListViewModel
 import io.getstream.chat.android.ui.viewmodel.channels.ChannelListViewModelFactory
 import io.getstream.chat.android.ui.viewmodel.channels.bindView
@@ -82,7 +89,8 @@ class ChatFragment : BaseFragment() {
 
                 val filter = Filters.and(
                     Filters.eq("type", "messaging"),
-                    Filters.contains("members", user.id)
+                    Filters.contains("members", localPreferenceManager.userId.toString()),
+                    Filters.eq("member_count", 2) // This ensures only direct messages
                 )
 
                 val viewModelFactory = ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
@@ -93,6 +101,9 @@ class ChatFragment : BaseFragment() {
                     startActivity(ChatActivity.newIntent(requireContext(), channel))
                 }
 
+                // Customize how channel items display (show as direct messages)
+                customizeChannelListAppearance()
+
                 fetchUsers(client)
             } else {
                 Log.e("ChatFragment", "User connection failed: ${result}")
@@ -101,18 +112,58 @@ class ChatFragment : BaseFragment() {
         }
     }
 
+    private fun customizeChannelListAppearance() {
+        binding.channelListView.setViewHolderFactory(object : ChannelListItemViewHolderFactory() {
+            override fun createChannelViewHolder(
+                parentView: ViewGroup,
+                viewType: Int
+            ): BaseChannelListItemViewHolder {
+                return object : ChannelListItemViewHolder(
+                    ChannelListItemView(parentView.context)
+                ) {
+                    override fun bindView(channel: Channel, position: Int) {
+                        super.bindView(channel, position)
+
+                        // For direct messages, show the other user's name instead of channel name
+                        val currentUserId = localPreferenceManager.userId.toString()
+                        val otherMembers = channel.members
+                            .filterNot { it.user.id == currentUserId }
+
+                        if (otherMembers.isNotEmpty()) {
+                            val otherUser = otherMembers.first().user
+
+                            // Find the TextView for channel name and replace with user name
+                            itemView.findViewById<TextView>(
+                                io.getstream.chat.android.ui.R.id.tv_channel_name
+                            )?.text = otherUser.name
+
+                            // Use the other user's avatar instead of channel avatar
+                            itemView.findViewById<AvatarView>(
+                                io.getstream.chat.android.ui.R.id.iv_channel_avatar
+                            )?.setUserData(otherUser)
+                        }
+                    }
+                }
+            }
+        })
+    }
+
     override fun onResume() {
         super.onResume()
 
         // Use the localPreferenceManager instead of the base class's preferenceManager
         val filter = Filters.and(
             Filters.eq("type", "messaging"),
-            Filters.contains("members", localPreferenceManager.userId.toString())
+            Filters.contains("members", localPreferenceManager.userId.toString()),
+            Filters.eq("member_count", 2) // This ensures only direct messages - added this filter
         )
 
         val viewModelFactory = ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
         val viewModel: ChannelListViewModel by viewModels { viewModelFactory }
         viewModel.bindView(binding.channelListView, viewLifecycleOwner)
+
+        // Re-apply customization on resume
+        customizeChannelListAppearance()
     }
 
     private fun fetchUsers(client: ChatClient) {

@@ -9,6 +9,9 @@
         android:id="@+id/messageListHeaderView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        app:streamUiMessageListHeaderShowBackButton="true"
+        app:streamUiMessageListHeaderShowUserAvatar="true"
+        app:streamUiMessageListHeaderShowOnlineIndicator="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -17,6 +20,8 @@
         android:id="@+id/messageListView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:streamUiMessageListItemTextStyle="body"
+        app:streamUiMessageListShowMessageDeliveryStatus="true"
         app:layout_constraintBottom_toTopOf="@+id/messageComposerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,6 +31,9 @@
         android:id="@+id/messageComposerView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        app:streamUiMessageComposerHintText="Message"
+        app:streamUiMessageComposerInputBackground="@drawable/stream_ui_shape_composer_input_round"
+        app:streamUiMessageComposerSendButtonEnabled="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
