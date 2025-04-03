@@ -182,4 +182,5 @@ class ChatFragment : BaseFragment() {
         super.onDestroyView()
         _binding = null
     }
+
 }
