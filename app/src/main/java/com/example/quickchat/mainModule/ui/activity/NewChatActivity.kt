@@ -63,10 +63,9 @@ class NewChatActivity : BaseActivity() {
 
         // Channel data specifically for direct messaging
         val channelData = mapOf(
-            // Don't use "name" for direct messages as it makes it look like a group
-            // Instead, use custom fields that indicate this is a direct message
             "members" to listOf(currentUserId, otherUserId),
-            "is_direct_message" to true
+            "is_direct_message" to true,
+            "member_count" to 2 // Explicitly set if using this filter
         )
 
         client.createChannel(

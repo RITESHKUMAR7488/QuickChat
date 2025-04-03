@@ -109,7 +109,8 @@ class ChatFragment : BaseFragment() {
         val filter = Filters.and(
             Filters.eq("type", "messaging"),
             Filters.`in`("members", listOf(userId)),
-            Filters.eq("member_count", 2)
+            Filters.eq("is_direct_message", true), // Match your channel property
+            Filters.eq("member_count", 2) // Keep this if you only want 1:1 chats
         )
 
         val viewModelFactory = ChannelListViewModelFactory(
