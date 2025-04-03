@@ -51,11 +51,14 @@ class SignIn : BaseActivity() {
 
         // Configure Google Sign-In options
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("1099197774188-k6m1ddg2juua5ofdl8a8f43p7p4opn6l.apps.googleusercontent.com")
+            .requestIdToken("1099197774188-kn7f12q93p57ul4uhklnmtj4ilsh4o9j.apps.googleusercontent.com")
             .requestId()
             .requestEmail()
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+        // Add this after creating mGoogleSignInClient in onCreate()
+        val account = GoogleSignIn.getLastSignedInAccount(this)
+        Log.d("GoogleSignIn", "Last signed in account at startup: ${account?.email ?: "None"}")
 
 
 
@@ -123,42 +126,57 @@ class SignIn : BaseActivity() {
     }
 
     // Initiate Google Sign-In process
+    // Modify your signInGoogle() function to include more logging
     private fun signInGoogle() {
-        Log.d("GoogleSignIn", "Starting Google Sign-In process")
+        Log.d("GoogleSignIn", "Starting Google Sign-In process with client ID ending: ${
+            "1099197774188-k6m1ddg2juua5ofdl8a8f43p7p4opn6l.apps.googleusercontent.com".takeLast(10)
+        }")
         val signIntent = mGoogleSignInClient.signInIntent
+        Log.d("GoogleSignIn", "Launching sign-in intent")
         launcher.launch(signIntent)
     }
 
     // Handle the result from Google Sign-In activity
+    // Replace your existing launcher with this improved version
     private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        Log.d("GoogleSignIn", "Activity result received with code: ${result.resultCode}")
+
         if (result.resultCode == RESULT_OK) {
+            Log.d("GoogleSignIn", "Result OK, attempting to get account from intent data")
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 handleResult(task)
             } catch (e: Exception) {
+                Log.e("GoogleSignIn", "Exception processing sign-in result", e)
                 commonUtil.showToast("Google Sign-In Failed: ${e.message}")
             }
+        } else {
+            Log.d("GoogleSignIn", "User canceled the sign-in process or it failed with result code: ${result.resultCode}")
+            if (result.data != null) {
+                val error = result.data?.extras?.get("error")
+                Log.d("GoogleSignIn", "Error data from intent: $error")
+            }
+            commonUtil.showToast("Google Sign-In was canceled or failed")
         }
     }
 
 
     private fun handleResult(completedTask: Task<GoogleSignInAccount>) {
-        Log.d("GoogleSignInhcfdjhf", "handleResult called")
-
         try {
-            Log.d("GoogleSignIn", "Attempting to get GoogleSignInAccount from task")
-            val account: GoogleSignInAccount? = completedTask.getResult(ApiException::class.java)
+            val account = completedTask.getResult(ApiException::class.java)
+            Log.d("GoogleSignIn", "Successfully retrieved account: ${account?.email}")
 
             if (account != null) {
-                Log.d("GoogleSignIn", "GoogleSignInAccount successfully retrieved: ${account.email}")
                 updateUI(account)
             } else {
-                Log.e("GoogleSignIn", "GoogleSignInAccount is null")
+                Log.e("GoogleSignIn", "Account is null after successful API call")
                 commonUtil.showToast("Google Sign-In failed: Account is null")
             }
         } catch (e: ApiException) {
-            Log.e("GoogleSignIn", "Google Sign-In failed with ApiException: ${e.message}", e)
-            commonUtil.showToast("Google Sign-In failed: ${e.message}")
+            // Get the error code to diagnose the specific issue
+            val statusCode = e.statusCode
+            Log.e("GoogleSignIn", "Google Sign-In failed with ApiException code: $statusCode, message: ${e.message}", e)
+            commonUtil.showToast("Google Sign-In failed with code $statusCode: ${e.localizedMessage}")
         } catch (e: Exception) {
             Log.e("GoogleSignIn", "Google Sign-In failed with unexpected exception: ${e.message}", e)
             commonUtil.showToast("Google Sign-In failed: ${e.message}")
@@ -248,7 +266,7 @@ class SignIn : BaseActivity() {
                         commonUtil.showToast(state.data)
                     }
                     is UiState.Failure -> {
-                        
+
                         commonUtil.showToast(state.error)
                     }
                 }

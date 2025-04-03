@@ -25,7 +25,7 @@ class UserDetailActivity : BaseActivity() {
         enableEdgeToEdge()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_user_detail)
         with(binding) {
-            fetchUserData()
+
             EditProfileButton.setOnClickListener {
                 val intent = Intent(this@UserDetailActivity, EditUserDetailActivity::class.java)
                 startActivity(intent)
@@ -55,5 +55,10 @@ class UserDetailActivity : BaseActivity() {
         Glide.with(this)
             .load(imageUrl)
             .into(binding.profileImage)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fetchUserData()
     }
 }

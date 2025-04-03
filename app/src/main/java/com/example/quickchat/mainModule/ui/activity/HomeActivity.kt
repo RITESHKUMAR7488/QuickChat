@@ -24,6 +24,8 @@ import com.example.quickchat.mainModule.viewmodels.PostViewModel
 import com.example.quickchat.onboardingModule.uis.activities.SignIn
 import com.example.quickchat.utility.BaseActivity
 import com.example.quickchat.utility.UiState
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -142,19 +144,30 @@ class HomeActivity : BaseActivity() {
 
     }
     private fun logout() {
-
         // Sign out from Firebase
         auth.signOut()
 
-        // Clear the logged-in state from shared preferences
-        val sharedPref = getSharedPreferences("motonew", MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putBoolean("loggedIn", false)
-        editor.apply()
-        // Redirect to FirstScreen and clear the activity stack
-        val intent = Intent(this, SignIn::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
+        // Configure Google Sign-In options matching your SignIn activity
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("1099197774188-kn7f12q93p57ul4uhklnmtj4ilsh4o9j.apps.googleusercontent.com")
+            .requestEmail()
+            .build()
+        val googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        // Sign out from Google
+        googleSignInClient.signOut().addOnCompleteListener {
+            // Clear preferences and redirect
+            val sharedPref = getSharedPreferences("motonew", MODE_PRIVATE)
+            val editor = sharedPref.edit()
+            editor.putBoolean("loggedIn", false)
+            editor.apply()
+
+            preferenceManager.isLoggedIn = false
+
+            val intent = Intent(this, SignIn::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
     }
 }
