@@ -33,7 +33,10 @@ playServicesAuth = "21.2.0"
 playServicesFido = "20.0.1"
 retrofit = "2.11.0"
 media3Ui = "1.5.1"
+
 streamChatAndroidUiComponents = "6.12.1"
+
+
 
 
 
@@ -74,8 +77,11 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 play-services-fido = { group = "com.google.android.gms", name = "play-services-fido", version.ref = "playServicesFido" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+stream-chat-android-core = { module = "io.getstream:stream-chat-android-core", version.ref = "streamChatAndroidUiComponents" }
 stream-chat-android-offline = { module = "io.getstream:stream-chat-android-offline", version.ref = "streamChatAndroidUiComponents" }
+
 stream-chat-android-ui-components = { module = "io.getstream:stream-chat-android-ui-components", version.ref = "streamChatAndroidUiComponents" }
+
 
 
 [plugins]

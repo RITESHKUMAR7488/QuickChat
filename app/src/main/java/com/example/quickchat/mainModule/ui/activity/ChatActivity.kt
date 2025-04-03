@@ -17,6 +17,9 @@ import io.getstream.chat.android.ui.viewmodel.messages.MessageListHeaderViewMode
 import io.getstream.chat.android.ui.viewmodel.messages.MessageListViewModel
 import io.getstream.chat.android.ui.viewmodel.messages.MessageListViewModelFactory
 import io.getstream.chat.android.ui.viewmodel.messages.bindView
+import io.getstream.chat.android.ui.feature.messages.header.MessageListHeaderView
+import io.getstream.chat.android.ui.feature.messages.list.MessageListView
+import io.getstream.chat.android.ui.feature.messages.composer.MessageComposerView
 
 @AndroidEntryPoint
 class ChatActivity : BaseActivity() {
@@ -30,25 +33,24 @@ class ChatActivity : BaseActivity() {
 
         val cid = intent.getStringExtra(CID_KEY) ?: throw IllegalArgumentException("Channel ID is required")
 
-        // Step 1 - Initialize ViewModels
+        // Initialize ViewModels
         val factory = MessageListViewModelFactory(this, cid)
         val messageListHeaderViewModel: MessageListHeaderViewModel by viewModels { factory }
         val messageListViewModel: MessageListViewModel by viewModels { factory }
         val messageComposerViewModel: MessageComposerViewModel by viewModels { factory }
 
-        // Step 2 - Bind Views with ViewModels
+        // Bind Views
         messageListHeaderViewModel.bindView(binding.messageListHeaderView, this)
         messageListViewModel.bindView(binding.messageListView, this)
         messageComposerViewModel.bindView(binding.messageComposerView, this)
 
-        // Step 3 - Handle thread interactions
+        // Handle thread interactions
         messageListViewModel.mode.observe(this) { mode ->
             when (mode) {
                 is MessageMode.MessageThread -> {
                     messageListHeaderViewModel.setActiveThread(mode.parentMessage)
                     messageComposerViewModel.setMessageMode(MessageMode.MessageThread(mode.parentMessage))
                 }
-
                 is MessageMode.Normal -> {
                     messageListHeaderViewModel.resetThread()
                     messageComposerViewModel.leaveThread()
@@ -56,19 +58,19 @@ class ChatActivity : BaseActivity() {
             }
         }
 
-        // Step 4 - Handle message editing
+        // Handle message editing
         binding.messageListView.setMessageEditHandler { message ->
             messageComposerViewModel.performMessageAction(Edit(message))
         }
 
-        // Step 5 - Handle navigation state
+        // Handle navigation state
         messageListViewModel.state.observe(this) { state ->
             if (state is MessageListViewModel.State.NavigateUp) {
                 finish()
             }
         }
 
-        // Step 6 - Handle back button behavior
+        // Handle back button
         val backHandler = {
             messageListViewModel.onEvent(MessageListViewModel.Event.BackButtonPressed)
         }

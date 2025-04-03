@@ -103,7 +103,17 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation(libs.stream.chat.android.ui.components)
-    implementation(libs.stream.chat.android.offline)
+
+    implementation (libs.stream.chat.android.ui.components) // or latest version
+    implementation (libs.stream.chat.android.offline)
+
+    // Core SDK (required)
+    implementation (libs.stream.chat.android.core)
+
+    // UI Components (required for XML attributes)
+    implementation (libs.stream.chat.android.ui.components)
+
+
+
 
 }

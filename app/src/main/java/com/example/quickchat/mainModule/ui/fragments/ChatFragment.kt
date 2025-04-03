@@ -6,9 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
@@ -20,17 +18,11 @@ import com.example.quickchat.utility.PreferenceManager
 import io.getstream.chat.android.client.ChatClient
 import io.getstream.chat.android.client.api.models.QueryUsersRequest
 import io.getstream.chat.android.client.logger.ChatLogLevel
-import io.getstream.chat.android.models.Channel
 import io.getstream.chat.android.models.Filters
 import io.getstream.chat.android.models.User
 import io.getstream.chat.android.offline.plugin.factory.StreamOfflinePluginFactory
 import io.getstream.chat.android.state.plugin.config.StatePluginConfig
 import io.getstream.chat.android.state.plugin.factory.StreamStatePluginFactory
-import io.getstream.chat.android.ui.feature.channels.list.viewholder.BaseChannelListItemViewHolder
-import io.getstream.chat.android.ui.feature.channels.list.viewholder.ChannelListItemViewHolder
-import io.getstream.chat.android.ui.feature.channels.list.viewholder.factory.ChannelListItemViewHolderFactory
-import io.getstream.chat.android.ui.feature.channels.list.ChannelListItemView
-import io.getstream.chat.android.ui.feature.avatar.AvatarView
 import io.getstream.chat.android.ui.viewmodel.channels.ChannelListViewModel
 import io.getstream.chat.android.ui.viewmodel.channels.ChannelListViewModelFactory
 import io.getstream.chat.android.ui.viewmodel.channels.bindView
@@ -40,10 +32,12 @@ class ChatFragment : BaseFragment() {
 
     private var _binding: FragmentChatBinding? = null
     private val binding get() = _binding!!
-    private lateinit var localPreferenceManager: PreferenceManager
+    private lateinit var client: ChatClient
+
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentChatBinding.inflate(inflater, container, false)
@@ -52,159 +46,140 @@ class ChatFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        preferenceManager = PreferenceManager(requireContext())
+        initializeStreamClient()
+        setupClickListeners()
+    }
 
-        localPreferenceManager = PreferenceManager(requireContext())
+    private fun initializeStreamClient() {
+        try {
+            val offlinePluginFactory = StreamOfflinePluginFactory(appContext = requireContext())
+            val statePluginFactory = StreamStatePluginFactory(
+                config = StatePluginConfig(
+                    backgroundSyncEnabled = true,
+                    userPresence = true
+                ),
+                appContext = requireContext()
+            )
 
-        binding.btnCreate.setOnClickListener {
-            startActivity(Intent(requireContext(), NewChatActivity::class.java))
+            client = ChatClient.Builder("rmfj6d9hddee", requireContext().applicationContext)
+                .withPlugins(offlinePluginFactory, statePluginFactory)
+                .logLevel(ChatLogLevel.ALL)
+                .build()
+
+            connectUser()
+        } catch (e: Exception) {
+            Log.e("ChatFragment", "Stream initialization failed", e)
+            showToast("Chat initialization failed")
+        }
+    }
+
+    private fun connectUser() {
+        val userId = preferenceManager.userId?.toString() ?: run {
+            showToast("User not logged in")
+            return
         }
 
-        val offlinePluginFactory = StreamOfflinePluginFactory(requireContext())
-        val statePluginFactory = StreamStatePluginFactory(
-            config = StatePluginConfig(
-                backgroundSyncEnabled = true,
-                userPresence = true,
-            ),
-            appContext = requireContext(),
-        )
-
-        val client = ChatClient.Builder("rmfj6d9hddee", requireContext())
-            .withPlugins(offlinePluginFactory, statePluginFactory)
-            .logLevel(ChatLogLevel.ALL)
-            .build()
-
         val user = User(
-            id = localPreferenceManager.userId.toString(),
-            name = localPreferenceManager.userModel?.firstName.toString(),
-            image = localPreferenceManager.userModel?.imageUrl.toString()
+            id = userId,
+            name = preferenceManager.userModel?.firstName ?: "User",
+            image = preferenceManager.userModel?.imageUrl ?: ""
         )
 
-        val token = generateJWT(localPreferenceManager.userId.toString(), "2tdtqr2gj6f49j2e5jdrjfkr6v2w4wynza6396xrm8guum5cp44bdf7naur94hr6")
-
-        Log.d("ChatFragmentsss12", "Token: $token")
+        val token = generateJWT(
+            userId = userId,
+            apiSecret = "2tdtqr2gj6f49j2e5jdrjfkr6v2w4wynza6396xrm8guum5cp44bdf7naur94hr6"
+        )
 
         client.connectUser(user, token).enqueue { result ->
             if (result.isSuccess) {
-                Log.d("ChatFragment", "User connected successfully!")
-
-                val filter = Filters.and(
-                    Filters.eq("type", "messaging"),
-                    Filters.contains("members", localPreferenceManager.userId.toString()),
-                    Filters.eq("member_count", 2) // This ensures only direct messages
-                )
-
-                val viewModelFactory = ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
-                val viewModel: ChannelListViewModel by viewModels { viewModelFactory }
-
-                viewModel.bindView(binding.channelListView, viewLifecycleOwner)
-                binding.channelListView.setChannelItemClickListener { channel ->
-                    startActivity(ChatActivity.newIntent(requireContext(), channel))
-                }
-
-                // Customize how channel items display (show as direct messages)
-                customizeChannelListAppearance()
-
-                fetchUsers(client)
+                Log.d("ChatFragment", "User connected successfully")
+                setupChannelList()
+                fetchUsers()
             } else {
-                Log.e("ChatFragment", "User connection failed: ${result}")
-                Toast.makeText(requireContext(), "Something went wrong!", Toast.LENGTH_SHORT).show()
+                Log.e("ChatFragment", "Connection failed: ${result.errorOrNull()}")
+                showToast("Failed to connect to chat")
             }
         }
     }
 
-    private fun customizeChannelListAppearance() {
-        binding.channelListView.setViewHolderFactory(object : ChannelListItemViewHolderFactory() {
-            override fun createChannelViewHolder(
-                parentView: ViewGroup,
-                viewType: Int
-            ): BaseChannelListItemViewHolder {
-                return object : ChannelListItemViewHolder(
-                    ChannelListItemView(parentView.context)
-                ) {
-                    override fun bindView(channel: Channel, position: Int) {
-                        super.bindView(channel, position)
+    private fun setupChannelList() {
+        val userId = preferenceManager.userId?.toString() ?: return
 
-                        // For direct messages, show the other user's name instead of channel name
-                        val currentUserId = localPreferenceManager.userId.toString()
-                        val otherMembers = channel.members
-                            .filterNot { it.user.id == currentUserId }
-
-                        if (otherMembers.isNotEmpty()) {
-                            val otherUser = otherMembers.first().user
-
-                            // Find the TextView for channel name and replace with user name
-                            itemView.findViewById<TextView>(
-                                io.getstream.chat.android.ui.R.id.tv_channel_name
-                            )?.text = otherUser.name
-
-                            // Use the other user's avatar instead of channel avatar
-                            itemView.findViewById<AvatarView>(
-                                io.getstream.chat.android.ui.R.id.iv_channel_avatar
-                            )?.setUserData(otherUser)
-                        }
-                    }
-                }
-            }
-        })
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        // Use the localPreferenceManager instead of the base class's preferenceManager
         val filter = Filters.and(
             Filters.eq("type", "messaging"),
-            Filters.contains("members", localPreferenceManager.userId.toString()),
-            Filters.eq("member_count", 2) // This ensures only direct messages - added this filter
+            Filters.`in`("members", listOf(userId)),
+            Filters.eq("member_count", 2)
         )
 
-        val viewModelFactory = ChannelListViewModelFactory(filter, ChannelListViewModel.DEFAULT_SORT)
+        val viewModelFactory = ChannelListViewModelFactory(
+            filter = filter,
+            sort = ChannelListViewModel.DEFAULT_SORT,
+            limit = 30
+        )
+
         val viewModel: ChannelListViewModel by viewModels { viewModelFactory }
         viewModel.bindView(binding.channelListView, viewLifecycleOwner)
 
-        // Re-apply customization on resume
-        customizeChannelListAppearance()
+        binding.channelListView.setChannelItemClickListener { channel ->
+            navigateToChat(channel)
+        }
     }
 
-    private fun fetchUsers(client: ChatClient) {
+    private fun fetchUsers() {
+        val userId = preferenceManager.userId?.toString() ?: return
+
         client.queryUsers(
             QueryUsersRequest(
-                Filters.ne("id", ""),
+                filter = Filters.ne("id", userId),
                 offset = 0,
                 limit = 50
             )
         ).enqueue { result ->
             if (result.isSuccess) {
-                val users = result.getOrNull()
-                Log.d("ChatFragment", "Users found: ${users?.size}")
+                // CORRECT WAY to access Stream SDK response data
+                val users = result.getOrNull() ?: emptyList() // Directly get the list
+                Log.d("ChatFragment", "Fetched ${users.size} users")
 
-                users?.forEach { user ->
-                    Log.d("ChatFragment", "User ID: ${user.id}, Name: ${user.name}, Image: ${user.image}")
-                }
+                // If you're using UiState in your ViewModel/UI:
+                // viewModel.setUsers(UiState.Success(users))
             } else {
-                Log.e("ChatFragment", "Error fetching users: ${result}")
+                val error = result.errorOrNull()?.message ?: "Unknown error"
+                Log.e("ChatFragment", "User fetch failed: $error")
+                showToast("Failed to load users")
+
+                // If using UiState:
+                // viewModel.setUsers(UiState.Failure(error))
             }
         }
+    }
+
+    private fun setupClickListeners() {
+        binding.btnCreate.setOnClickListener {
+            startActivity(Intent(requireContext(), NewChatActivity::class.java))
+        }
+    }
+
+    private fun navigateToChat(channel: io.getstream.chat.android.models.Channel) {
+        startActivity(ChatActivity.newIntent(requireContext(), channel))
+    }
+
+    private fun generateJWT(userId: String, apiSecret: String): String {
+        return JWT.create()
+            .withIssuer("QuickChat")
+            .withSubject(userId)
+            .withClaim("user_id", userId)
+            .withIssuedAt(Date())
+            .withExpiresAt(Date(System.currentTimeMillis() + 3600 * 1000))
+            .sign(Algorithm.HMAC256(apiSecret))
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    private fun generateJWT(userId: String, apiSecret: String, expirationInMinutes: Int? = null): String {
-        val algorithm = Algorithm.HMAC256(apiSecret)
-        val jwtBuilder = JWT.create()
-            .withIssuer("YourAppName")
-            .withSubject(userId)
-            .withClaim("user_id", userId)
-            .withIssuedAt(Date())
-
-        expirationInMinutes?.let {
-            val expirationDate = Date(System.currentTimeMillis() + it * 60 * 1000)
-            jwtBuilder.withExpiresAt(expirationDate)
-        }
-
-        return jwtBuilder.sign(algorithm)
     }
 }
