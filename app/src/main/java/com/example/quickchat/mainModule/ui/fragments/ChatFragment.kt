@@ -95,7 +95,7 @@ class ChatFragment : BaseFragment() {
             if (result.isSuccess) {
                 Log.d("ChatFragment", "User connected successfully")
                 setupChannelList()
-                fetchUsers()
+               // fetchUsers()
             } else {
                 Log.e("ChatFragment", "Connection failed: ${result.errorOrNull()}")
                 showToast("Failed to connect to chat")
@@ -104,7 +104,10 @@ class ChatFragment : BaseFragment() {
     }
 
     private fun setupChannelList() {
+
         val userId = preferenceManager.userId?.toString() ?: return
+
+        Log.d("UserIDSSSS",userId)
 
         val filter = Filters.and(
             Filters.eq("type", "messaging"),
@@ -112,6 +115,7 @@ class ChatFragment : BaseFragment() {
             Filters.eq("is_direct_message", true), // Match your channel property
             Filters.eq("member_count", 2) // Keep this if you only want 1:1 chats
         )
+        Log.d("ChatFragment", "Filter: $filter")
 
         val viewModelFactory = ChannelListViewModelFactory(
             filter = filter,
@@ -122,38 +126,20 @@ class ChatFragment : BaseFragment() {
         val viewModel: ChannelListViewModel by viewModels { viewModelFactory }
         viewModel.bindView(binding.channelListView, viewLifecycleOwner)
 
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            Log.d("ChatFragment", "State: $state")
+
+        }
+
+
+
+
         binding.channelListView.setChannelItemClickListener { channel ->
             navigateToChat(channel)
         }
     }
 
-    private fun fetchUsers() {
-        val userId = preferenceManager.userId?.toString() ?: return
 
-        client.queryUsers(
-            QueryUsersRequest(
-                filter = Filters.ne("id", userId),
-                offset = 0,
-                limit = 50
-            )
-        ).enqueue { result ->
-            if (result.isSuccess) {
-                // CORRECT WAY to access Stream SDK response data
-                val users = result.getOrNull() ?: emptyList() // Directly get the list
-                Log.d("ChatFragment", "Fetched ${users.size} users")
-
-                // If you're using UiState in your ViewModel/UI:
-                // viewModel.setUsers(UiState.Success(users))
-            } else {
-                val error = result.errorOrNull()?.message ?: "Unknown error"
-                Log.e("ChatFragment", "User fetch failed: $error")
-                showToast("Failed to load users")
-
-                // If using UiState:
-                // viewModel.setUsers(UiState.Failure(error))
-            }
-        }
-    }
 
     private fun setupClickListeners() {
         binding.btnCreate.setOnClickListener {
