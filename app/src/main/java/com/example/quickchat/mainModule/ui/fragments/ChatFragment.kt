@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.quickchat.databinding.FragmentChatBinding
@@ -32,11 +31,9 @@ import java.util.Date
 class ChatFragment : BaseFragment() {
 
     private var _binding: FragmentChatBinding? = null
-    // Use this safe getter that returns nullable binding
-    private val binding get() = _binding
-
+    private val binding get() = _binding!!
     private lateinit var client: ChatClient
-    private val viewModel: ChannelListViewModel by viewModels()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,7 +41,7 @@ class ChatFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentChatBinding.inflate(inflater, container, false)
-        return requireNotNull(_binding).root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -95,33 +92,30 @@ class ChatFragment : BaseFragment() {
         )
 
         client.connectUser(user, token).enqueue { result ->
-            // Use viewLifecycleOwner to ensure we're in a valid state
-            viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-                if (binding == null) return@launchWhenStarted // Fragment detached
-
-                if (result.isSuccess) {
-                    Log.d("ChatFragment", "User connected successfully")
-                    setupChannelList()
-                    fetchUsers()
-                } else {
-                    Log.e("ChatFragment", "Connection failed: ${result.errorOrNull()}")
-                    showToast("Failed to connect to chat")
-                }
+            if (result.isSuccess) {
+                Log.d("ChatFragment", "User connected successfully")
+                setupChannelList()
+               // fetchUsers()
+            } else {
+                Log.e("ChatFragment", "Connection failed: ${result.errorOrNull()}")
+                showToast("Failed to connect to chat")
             }
         }
     }
 
     private fun setupChannelList() {
-        if (binding == null) return // Early exit if fragment is detached
 
         val userId = preferenceManager.userId?.toString() ?: return
+
+        Log.d("UserIDSSSS",userId)
 
         val filter = Filters.and(
             Filters.eq("type", "messaging"),
             Filters.`in`("members", listOf(userId)),
-            Filters.eq("is_direct_message", true),
-            Filters.eq("member_count", 2)
+            Filters.eq("is_direct_message", true), // Match your channel property
+            Filters.eq("member_count", 2) // Keep this if you only want 1:1 chats
         )
+        Log.d("ChatFragment", "Filter: $filter")
 
         val viewModelFactory = ChannelListViewModelFactory(
             filter = filter,
@@ -129,41 +123,26 @@ class ChatFragment : BaseFragment() {
             limit = 30
         )
 
-        // Use the viewModel property we declared at class level
-        viewModel.bindView(requireNotNull(binding).channelListView, viewLifecycleOwner)
+        val viewModel: ChannelListViewModel by viewModels { viewModelFactory }
+        viewModel.bindView(binding.channelListView, viewLifecycleOwner)
 
-        binding?.channelListView?.setChannelItemClickListener { channel ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            Log.d("ChatFragment", "State: $state")
+
+        }
+
+
+
+
+        binding.channelListView.setChannelItemClickListener { channel ->
             navigateToChat(channel)
         }
     }
 
-    private fun fetchUsers() {
-        val userId = preferenceManager.userId?.toString() ?: return
 
-        client.queryUsers(
-            QueryUsersRequest(
-                filter = Filters.ne("id", userId),
-                offset = 0,
-                limit = 50
-            )
-        ).enqueue { result ->
-            viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-                if (binding == null) return@launchWhenStarted
-
-                if (result.isSuccess) {
-                    val users = result.getOrNull() ?: emptyList()
-                    Log.d("ChatFragment", "Fetched ${users.size} users")
-                } else {
-                    val error = result.errorOrNull()?.message ?: "Unknown error"
-                    Log.e("ChatFragment", "User fetch failed: $error")
-                    showToast("Failed to load users")
-                }
-            }
-        }
-    }
 
     private fun setupClickListeners() {
-        binding?.btnCreate?.setOnClickListener {
+        binding.btnCreate.setOnClickListener {
             startActivity(Intent(requireContext(), NewChatActivity::class.java))
         }
     }
@@ -188,8 +167,7 @@ class ChatFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Clear references to avoid memory leaks
-        binding?.channelListView?.setChannelItemClickListener(null)
         _binding = null
     }
+
 }

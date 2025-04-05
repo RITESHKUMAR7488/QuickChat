@@ -7,12 +7,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.quickchat.databinding.ItemUserBinding
+import com.example.quickchat.mainModule.models.ChatModel
 import com.example.quickchat.onboardingModule.models.UserModel
 
-class UserAdapter(private var users: List<UserModel>, private val context: Context, private val onUserClick: (UserModel) -> Unit) :
+class UserAdapter(private var users: List<ChatModel>, private val context: Context, private val onUserClick: (ChatModel) -> Unit) :
     RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
-    fun updateData(newUsers: List<UserModel>) {
+    fun updateData(newUsers: List<ChatModel>) {
         users = newUsers
         notifyDataSetChanged()
     }
@@ -31,9 +32,9 @@ class UserAdapter(private var users: List<UserModel>, private val context: Conte
 
     inner class UserViewHolder(private val binding: ItemUserBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(user: UserModel) {
-            binding.tvUsername.text = user.firstName
-            Glide.with(binding.ivProfile.context).load(user.imageUrl).into(binding.ivProfile)
+        fun bind(user: ChatModel) {
+            binding.tvUsername.text = user.name
+            Glide.with(binding.ivProfile.context).load(user.image).into(binding.ivProfile)
 
             binding.root.setOnClickListener {
                 onUserClick(user)
