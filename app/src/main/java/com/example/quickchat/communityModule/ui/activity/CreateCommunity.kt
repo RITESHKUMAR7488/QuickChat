@@ -54,6 +54,9 @@ class CreateCommunity : BaseActivity() {
         with(binding) {
             createProfileButton.setOnClickListener {
                 validateCommunity()
+                back.setOnClickListener{
+                    onBackPressedDispatcher.onBackPressed()
+                }
 
 
             }

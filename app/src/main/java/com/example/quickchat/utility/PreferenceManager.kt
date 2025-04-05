@@ -79,6 +79,19 @@ class PreferenceManager @Inject constructor(@ApplicationContext val context: Con
             editor.putString(Constant.TOKEN_ID,tokenID)
             editor.commit()
         }
+    fun clearSession() {
+        val editor = mPreferences.edit()
+        editor.clear()
+        editor.apply()
+
+        // Reset specific values you want to ensure are cleared
+        isLoggedIn = false
+        isGmailLoggedIn = false
+        userId = ""
+        tokenID = ""
+        email = ""
+        // Reset any other relevant values
+    }
 
 
 

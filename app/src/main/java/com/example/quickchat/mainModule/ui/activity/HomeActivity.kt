@@ -143,30 +143,23 @@ class HomeActivity : BaseActivity() {
         fragmentTransaction.commit()
 
     }
+    // In your logout function
     private fun logout() {
-        // Sign out from Firebase
-        auth.signOut()
+        // Sign out from Firebase Auth
+        FirebaseAuth.getInstance().signOut()
 
-        // Configure Google Sign-In options matching your SignIn activity
+        // Sign out from Google
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("1099197774188-kn7f12q93p57ul4uhklnmtj4ilsh4o9j.apps.googleusercontent.com")
             .requestEmail()
             .build()
         val googleSignInClient = GoogleSignIn.getClient(this, gso)
+        googleSignInClient.signOut().addOnCompleteListener(this) {
+            // Clear your SharedPreferences
+            preferenceManager.clearSession() // Make sure this clears isLoggedIn and isGmailLoggedIn flags
 
-        // Sign out from Google
-        googleSignInClient.signOut().addOnCompleteListener {
-            // Clear preferences and redirect
-            val sharedPref = getSharedPreferences("motonew", MODE_PRIVATE)
-            val editor = sharedPref.edit()
-            editor.putBoolean("loggedIn", false)
-            editor.apply()
-
-            preferenceManager.isLoggedIn = false
-
-            val intent = Intent(this, SignIn::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+            // Navigate to login screen
+            startActivity(Intent(this, SignIn::class.java))
             finish()
         }
     }

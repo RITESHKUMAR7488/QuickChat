@@ -50,15 +50,16 @@ class SignIn : BaseActivity() {
 
 
         // Configure Google Sign-In options
+        // In SignIn.kt - Replace your current Google Sign-In options setup
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("1099197774188-kn7f12q93p57ul4uhklnmtj4ilsh4o9j.apps.googleusercontent.com")
             .requestId()
             .requestEmail()
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-        // Add this after creating mGoogleSignInClient in onCreate()
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        Log.d("GoogleSignIn", "Last signed in account at startup: ${account?.email ?: "None"}")
+
+// Add this line to clear any cached sign-in state
+        mGoogleSignInClient.signOut()
 
 
 
@@ -128,12 +129,14 @@ class SignIn : BaseActivity() {
     // Initiate Google Sign-In process
     // Modify your signInGoogle() function to include more logging
     private fun signInGoogle() {
-        Log.d("GoogleSignIn", "Starting Google Sign-In process with client ID ending: ${
-            "1099197774188-k6m1ddg2juua5ofdl8a8f43p7p4opn6l.apps.googleusercontent.com".takeLast(10)
-        }")
-        val signIntent = mGoogleSignInClient.signInIntent
-        Log.d("GoogleSignIn", "Launching sign-in intent")
-        launcher.launch(signIntent)
+        Log.d("GoogleSignIn", "Starting Google Sign-In process...")
+
+        // This will force the account picker to show
+        mGoogleSignInClient.signOut().addOnCompleteListener {
+            val signIntent = mGoogleSignInClient.signInIntent
+            Log.d("GoogleSignIn", "Launching sign-in intent")
+            launcher.launch(signIntent)
+        }
     }
 
     // Handle the result from Google Sign-In activity

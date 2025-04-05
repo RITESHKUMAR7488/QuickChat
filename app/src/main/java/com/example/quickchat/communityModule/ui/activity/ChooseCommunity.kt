@@ -44,6 +44,9 @@ class ChooseCommunity : BaseActivity() {
             title = "My App Title"  // Set title
             setDisplayHomeAsUpEnabled(true)  // Enable back button
         }
+        binding.back.setOnClickListener{
+            onBackPressedDispatcher.onBackPressed()
+        }
 
         // Fetch and display the list of communities
         fetchAndDisplayCommunities()

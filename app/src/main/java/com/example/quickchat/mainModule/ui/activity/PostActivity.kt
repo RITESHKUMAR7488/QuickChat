@@ -55,6 +55,7 @@ class PostActivity : BaseActivity() {
         setUpViewPager()
 
 
+
     }
     private fun setUpViewPager() {
         Log.d("setUpViewPager", "Initializing ViewPager and TabLayout")

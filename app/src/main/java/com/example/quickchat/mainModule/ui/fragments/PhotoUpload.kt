@@ -33,9 +33,12 @@ import java.io.File
 import java.io.IOException
 
 @AndroidEntryPoint
+
 class PhotoUpload : BaseFragment() {
 
-    private lateinit var binding: FragmentPhotoUploadBinding
+    private var _binding: FragmentPhotoUploadBinding? = null
+    private val binding get() = _binding ?: throw IllegalStateException("Binding is null")
+
     private val postViewModel: PostViewModel by viewModels()
     private var communityId: String? = null
     private var filePath: Uri? = null
@@ -44,51 +47,42 @@ class PhotoUpload : BaseFragment() {
         private const val ARG_COMMUNITY_ID = "communityId"
 
         fun newInstance(communityId: String): PhotoUpload {
-            val fragment = PhotoUpload()
-            val args = Bundle()
-            args.putString(ARG_COMMUNITY_ID, communityId)
-            fragment.arguments = args
-            return fragment
+            return PhotoUpload().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_COMMUNITY_ID, communityId)
+                }
+            }
         }
     }
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK && result.data != null) {
+        if (result.resultCode == RESULT_OK && result.data != null && isAdded) {
             filePath = result.data?.data
             Log.d("FilePathss", filePath.toString())
 
             try {
                 val bitmap = MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, filePath)
-                binding.mainLayout.visibility = View.GONE
-                binding.cropImageView.visibility = View.VISIBLE
-                binding.titleText.text = "Crop"
-                binding.rotate.visibility = View.VISIBLE
-                binding.done.visibility = View.VISIBLE
-                binding.cropImageView.setImageUriAsync(filePath)
-
-                binding.rotate.setOnClickListener {
-                    binding.cropImageView.rotateImage(90)
-                }
-                binding.done.setOnClickListener {
-                    binding.mainLayout.visibility = View.VISIBLE
-                    binding.cropImageView.visibility = View.GONE
-                    binding.rotate.visibility = View.GONE
-                    binding.done.visibility = View.GONE
-                    binding.titleText.text = "Profile"
-                    val cropped: Bitmap? = binding.cropImageView.croppedImage
-                    filePath = cropped?.let { getUriFromBitmap(it) }
-                    binding.postImage.setImageBitmap(cropped)
+                with(binding) {
+                    mainLayout.visibility = View.GONE
+                    cropImageView.visibility = View.VISIBLE
+                    titleText.text = "Crop"
+                    rotate.visibility = View.VISIBLE
+                    done.visibility = View.VISIBLE
+                    cropImageView.setImageUriAsync(filePath)
                 }
             } catch (e: IOException) {
+                if (isAdded) {
+                    Toast.makeText(requireContext(), "Failed to load image", Toast.LENGTH_SHORT).show()
+                }
                 e.printStackTrace()
             }
         }
     }
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) {
+        if (isGranted && isAdded) {
             selectImage()
-        } else {
+        } else if (isAdded) {
             Toast.makeText(requireContext(), "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
@@ -96,19 +90,22 @@ class PhotoUpload : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = FragmentPhotoUploadBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentPhotoUploadBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         preferenceManager = PreferenceManager(requireContext())
         communityId = arguments?.getString(ARG_COMMUNITY_ID)
 
         if (communityId.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "Invalid community selected.", Toast.LENGTH_SHORT).show()
-            requireActivity().supportFragmentManager.popBackStack()
+            if (isAdded) {
+                Toast.makeText(requireContext(), "Invalid community selected.", Toast.LENGTH_SHORT).show()
+            }
+            parentFragmentManager.popBackStack()
             return
         }
 
@@ -119,23 +116,57 @@ class PhotoUpload : BaseFragment() {
         with(binding) {
             btnPost.setOnClickListener { validateAndCreatePost() }
             postImage.setOnClickListener { checkAndRequestPermissions() }
+
+            back.setOnClickListener {
+                if (isAdded) {
+                    parentFragmentManager.beginTransaction()
+                        .remove(this@PhotoUpload)
+                        .commit()
+                }
+            }
+
+            rotate.setOnClickListener {
+                if (isAdded) {
+                    cropImageView.rotateImage(90)
+                }
+            }
+
+            done.setOnClickListener {
+                if (isAdded) {
+                    with(binding) {
+                        mainLayout.visibility = View.VISIBLE
+                        cropImageView.visibility = View.GONE
+                        rotate.visibility = View.GONE
+                        done.visibility = View.GONE
+                        titleText.text = "Profile"
+                        val cropped: Bitmap? = cropImageView.croppedImage
+                        filePath = cropped?.let { getUriFromBitmap(it) }
+                        postImage.setImageBitmap(cropped)
+                    }
+                }
+            }
         }
     }
 
     private fun checkAndRequestPermissions() {
+        if (!isAdded) return
+
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
-        if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_DENIED) {
-            requestPermissionLauncher.launch(permission)
-        } else {
+
+        if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
             selectImage()
+        } else {
+            requestPermissionLauncher.launch(permission)
         }
     }
 
     private fun validateAndCreatePost() {
+        if (!isAdded) return
+
         with(binding) {
             val title = etTitle.text.toString().trim()
             val description = etDescription.text.toString().trim()
@@ -171,11 +202,12 @@ class PhotoUpload : BaseFragment() {
 
             if (file != null) {
                 postViewModel.uploadImage(file, apiKey).observe(viewLifecycleOwner) { state ->
+                    if (!isAdded) return@observe
+
                     when (state) {
                         is UiState.Loading -> {
                             Toast.makeText(requireContext(), "Image is Uploading...", Toast.LENGTH_SHORT).show()
                         }
-
                         is UiState.Success -> {
                             val response = state.data
                             post.imageUrl = response.image?.url
@@ -183,22 +215,19 @@ class PhotoUpload : BaseFragment() {
                             preferenceManager.userId?.let { userId ->
                                 communityId?.let { communityId ->
                                     postViewModel.addPost(communityId, post)
-                                        .observe(viewLifecycleOwner) { it2 ->
-                                            when (it2) {
+                                        .observe(viewLifecycleOwner) { state ->
+                                            if (!isAdded) return@observe
+
+                                            when (state) {
                                                 is UiState.Loading -> {
                                                     Log.d("TAG", "Creating community: Loading...")
                                                 }
-
                                                 is UiState.Success -> {
-                                                    Toast.makeText(requireContext(), "Community created successfully", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(requireContext(), "Post created successfully", Toast.LENGTH_SHORT).show()
+                                                    parentFragmentManager.popBackStack()
                                                 }
-
                                                 is UiState.Failure -> {
-                                                    Toast.makeText(requireContext(), it2.error, Toast.LENGTH_SHORT).show()
-                                                }
-
-                                                else -> {
-                                                    Toast.makeText(requireContext(), "Something went wrong", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(requireContext(), state.error, Toast.LENGTH_SHORT).show()
                                                 }
                                             }
                                         }
@@ -210,30 +239,80 @@ class PhotoUpload : BaseFragment() {
                         }
                     }
                 }
+            } else {
+                // Handle case where no image is selected but still want to post
+                preferenceManager.userId?.let { userId ->
+                    communityId?.let { communityId ->
+                        postViewModel.addPost(communityId, post)
+                            .observe(viewLifecycleOwner) { state ->
+                                if (!isAdded) return@observe
+
+                                when (state) {
+                                    is UiState.Loading -> { /* Handle loading */ }
+                                    is UiState.Success -> {
+                                        Toast.makeText(requireContext(), "Post created successfully", Toast.LENGTH_SHORT).show()
+                                        parentFragmentManager.popBackStack()
+                                    }
+                                    is UiState.Failure -> {
+                                        Toast.makeText(requireContext(), state.error, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                    }
+                }
             }
         }
     }
 
     private fun selectImage() {
-        val intent = Intent()
-        intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT
-        pickImageLauncher.launch(Intent.createChooser(intent, "Select Image from here..."))
+        if (!isAdded) return
+
+        val intent = Intent().apply {
+            type = "image/*"
+            action = Intent.ACTION_GET_CONTENT
+        }
+        pickImageLauncher.launch(Intent.createChooser(intent, "Select Image"))
     }
 
-    private fun getUriFromBitmap(bitmap: Bitmap): Uri {
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, ByteArrayOutputStream())
-        val path = MediaStore.Images.Media.insertImage(
-            requireActivity().contentResolver,
-            bitmap, System.currentTimeMillis().toString(), null
-        )
-        return Uri.parse(path)
+    private fun getUriFromBitmap(bitmap: Bitmap): Uri? {
+        if (!isAdded) return null
+
+        return try {
+            val bytes = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 30, bytes)
+            val path = MediaStore.Images.Media.insertImage(
+                requireActivity().contentResolver,
+                bitmap, System.currentTimeMillis().toString(), null
+            )
+            Uri.parse(path)
+        } catch (e: Exception) {
+            if (isAdded) {
+                Toast.makeText(requireContext(), "Failed to save image", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
     }
 
-    private fun uriToFile(uri: Uri): File {
-        val inputStream = requireActivity().contentResolver.openInputStream(uri)
-        val file = File(requireActivity().cacheDir, "community_image.jpg")
-        file.outputStream().use { outputStream -> inputStream?.copyTo(outputStream) }
-        return file
+    private fun uriToFile(uri: Uri): File? {
+        if (!isAdded) return null
+
+        return try {
+            val inputStream = requireActivity().contentResolver.openInputStream(uri)
+            val file = File(requireActivity().cacheDir, "community_image.jpg")
+            file.outputStream().use { outputStream ->
+                inputStream?.copyTo(outputStream)
+            }
+            file
+        } catch (e: Exception) {
+            if (isAdded) {
+                Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
