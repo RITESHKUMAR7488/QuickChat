@@ -25,9 +25,11 @@
     import com.example.quickchat.utility.PreferenceManager
     import com.example.quickchat.utility.UiState
     import dagger.hilt.android.AndroidEntryPoint
+    import www.sanju.motiontoast.MotionToast
     import java.io.ByteArrayOutputStream
     import java.io.File
     import java.io.IOException
+    import kotlin.time.Duration
 
     @AndroidEntryPoint
     class EditUserDetailActivity : BaseActivity() {
@@ -120,7 +122,7 @@
                         when (state) {
 
                             is UiState.Loading -> {
-                                Toast.makeText(this, "Image is Uploading...", Toast.LENGTH_SHORT).show()
+                                motionToastUtil.showInfoToast(this@EditUserDetailActivity,"Image is uploading",MotionToast.LONG_DURATION)
                             }
                             is UiState.Success -> {
                                 Log.d("statesawefewstwe", state.data.toString())
@@ -139,6 +141,7 @@
                                         }
                                         is UiState.Success -> {
                                             preferenceManager.userModel = model
+                                            motionToastUtil.showSuccessToast(this@EditUserDetailActivity,"Profile is Updated",MotionToast.LONG_DURATION)
                                             onBackPressedDispatcher.onBackPressed()
                                             finish()
                                         }
@@ -162,6 +165,7 @@
                             is UiState.Success -> {
                                 Log.d("states", it.data.toString())
                                 preferenceManager.userModel = model
+                                motionToastUtil.showSuccessToast(this@EditUserDetailActivity,"Profile is Updated",MotionToast.LONG_DURATION)
                                 onBackPressedDispatcher.onBackPressed()
                                 finish()
                             }

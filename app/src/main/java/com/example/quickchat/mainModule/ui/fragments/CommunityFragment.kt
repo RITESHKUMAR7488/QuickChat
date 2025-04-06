@@ -40,10 +40,7 @@ class CommunityFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialize RecyclerView
-        setupRecyclerView()
 
-        // Observe data from ViewModel
-        observeCommunities()
 
         // Floating Action Button click listener
         binding.btnCreate.setOnClickListener {
@@ -85,5 +82,12 @@ class CommunityFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+    override fun onResume() {
+        super.onResume()
+        setupRecyclerView()
+
+        // Observe data from ViewModel
+        observeCommunities()
     }
 }

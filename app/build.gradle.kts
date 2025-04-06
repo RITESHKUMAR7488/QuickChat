@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.material.v190)
     implementation(libs.circleimageview)
+    implementation (libs.motiontoast)
 
     // Media & Image Processing
     implementation(libs.androidx.media3.exoplayer)

@@ -10,4 +10,8 @@ open class BaseActivity : AppCompatActivity(){
      @Inject
      lateinit var preferenceManager: PreferenceManager
 
+     @Inject
+     lateinit var motionToastUtil: MotionToastUtil
+
+
 }

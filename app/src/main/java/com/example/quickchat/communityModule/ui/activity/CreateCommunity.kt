@@ -26,6 +26,7 @@ import com.example.quickchat.utility.BaseActivity
 import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.AndroidEntryPoint
+import www.sanju.motiontoast.MotionToast
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -83,27 +84,31 @@ class CreateCommunity : BaseActivity() {
 
             if (communityName.isEmpty()) {
                 nameInput.error = "Please enter community name"
-                commonUtil.showToast("Please enter community name")
+                motionToastUtil.showWarningToast(this@CreateCommunity,"Please enter community name",MotionToast.LONG_DURATION)
+
                 return
             }
             if (communityDescription.isEmpty()) {
                 descriptionInput.error = "Please enter community description"
-                commonUtil.showToast("Please enter community description")
+                motionToastUtil.showWarningToast(this@CreateCommunity,"Please enter community description",MotionToast.LONG_DURATION)
+
                 return
             }
             if (email.isEmpty()) {
                 emailInput.error = "Please enter email"
-                commonUtil.showToast("Please enter email")
+                motionToastUtil.showWarningToast(this@CreateCommunity,"Please enter community email",MotionToast.LONG_DURATION)
+
                 return
             }
             if (mobile.isEmpty() || mobile.length != 10) {
                 mobileInput.error = "Please enter a valid mobile number"
-                commonUtil.showToast("Please enter a valid mobile number")
+                motionToastUtil.showWarningToast(this@CreateCommunity,"Please enter a valid mobile number",MotionToast.LONG_DURATION)
+
                 return
             }
             if (address.isEmpty()) {
                 addressInput.error = "Please enter address"
-                commonUtil.showToast("Please enter address")
+                motionToastUtil.showWarningToast(this@CreateCommunity,"Please enter address",MotionToast.LONG_DURATION)
                 return
             }
 
@@ -144,7 +149,8 @@ class CreateCommunity : BaseActivity() {
                                             }
 
                                             is UiState.Success -> {
-                                                commonUtil.showToast("Community created successfully")
+                                                motionToastUtil.showSuccessToast(this@CreateCommunity,"Community created successfully",MotionToast.LONG_DURATION)
+                                                onBackPressedDispatcher.onBackPressed()
 
                                             }
 
@@ -253,5 +259,9 @@ class CreateCommunity : BaseActivity() {
         val file = File(cacheDir, "community_image.jpg")
         file.outputStream().use { outputStream -> inputStream?.copyTo(outputStream) }
         return file
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 }

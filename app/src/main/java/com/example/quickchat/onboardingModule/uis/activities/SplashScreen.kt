@@ -34,7 +34,6 @@ class SplashScreen : BaseActivity() {
 
                     startActivity(Intent(this@SplashScreen, SignUp::class.java))
                     finish()
-
                 },3000)
             }
 

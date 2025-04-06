@@ -16,6 +16,7 @@ import com.example.quickchat.mainModule.ui.activity.PostActivity
 import com.example.quickchat.utility.BaseActivity
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.AndroidEntryPoint
+import www.sanju.motiontoast.MotionToast
 
 @AndroidEntryPoint
 class ChooseCommunity : BaseActivity() {
@@ -72,11 +73,13 @@ class ChooseCommunity : BaseActivity() {
                 is UiState.Success -> {
                     if (it.data.isEmpty()) {
                         // Show message if no communities are found
-                        commonUtil.showToast("No community found")
+                        motionToastUtil.showWarningToast(this@ChooseCommunity,"No community found",
+                            MotionToast.LONG_DURATION)
                     } else {
                         // Update the community list and notify the adapter
                         communityList = it.data
-                        commonUtil.showToast("Communities found")
+                        motionToastUtil.showInfoToast(this@ChooseCommunity,"Communities found",MotionToast.LONG_DURATION)
+
                         setupRecyclerView()
                     }
                 }

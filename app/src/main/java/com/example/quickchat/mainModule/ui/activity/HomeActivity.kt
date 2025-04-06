@@ -39,7 +39,7 @@ class HomeActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main3)
-        getUSerDetails()
+
 
         replaceFragment(HomeFragment())
 
@@ -162,5 +162,10 @@ class HomeActivity : BaseActivity() {
             startActivity(Intent(this, SignIn::class.java))
             finish()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getUSerDetails()
     }
 }

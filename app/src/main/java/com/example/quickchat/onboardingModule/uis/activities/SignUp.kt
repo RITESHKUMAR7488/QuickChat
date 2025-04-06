@@ -17,6 +17,7 @@ import com.example.quickchat.onboardingModule.viewModels.OnBoardingViewModel
 import com.example.quickchat.utility.BaseActivity
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.AndroidEntryPoint
+import www.sanju.motiontoast.MotionToast
 
 @AndroidEntryPoint
 class SignUp : BaseActivity() {
@@ -81,6 +82,7 @@ class SignUp : BaseActivity() {
                     is UiState.Success ->{
                         Log.d("states",it.data.toString())
                         preferenceManager.isLoggedIn=true
+                        motionToastUtil.showSuccessToast(this@SignUp,"Registration Successful",duration = MotionToast.LONG_DURATION)
                         val intent= Intent(this@SignUp, HomeActivity::class.java)
                         startActivity(intent)
                         finish()

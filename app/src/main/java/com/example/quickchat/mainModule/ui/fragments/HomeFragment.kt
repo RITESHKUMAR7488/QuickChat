@@ -35,7 +35,7 @@ class HomeFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        getALlPostData()
+
     }
 
     private fun setupRecyclerView(list: List<MainPostModel>) {
@@ -76,5 +76,10 @@ class HomeFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getALlPostData()
     }
 }
