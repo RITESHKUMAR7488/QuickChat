@@ -98,6 +98,7 @@ dependencies {
 
     // Dependency Injection
     implementation(libs.hilt.android)
+    implementation(libs.androidx.activity)
     kapt(libs.hilt.android.compiler)
 
     // Testing

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="comment"
+            type="com.example.quickchat.mainModule.models.CommentModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/ivCommentUserProfile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/tvCommentUsername"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/ivCommentUserProfile"
+            app:layout_constraintTop_toTopOf="@+id/ivCommentUserProfile"
+            tools:text="Username" />
+
+        <TextView
+            android:id="@+id/tvCommentText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tvCommentUsername"
+            app:layout_constraintTop_toBottomOf="@+id/tvCommentUsername"
+            tools:text="This is a comment text that could be multiple lines long. It contains the user's comment on the post." />
+
+        <TextView
+            android:id="@+id/tvCommentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@+id/tvCommentText"
+            app:layout_constraintTop_toBottomOf="@+id/tvCommentText"
+            tools:text="2 hours ago" />
+
+        <ImageButton
+            android:id="@+id/btnLikeComment"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="16dp"
+            android:background="@null"
+            android:contentDescription="Like comment"
+            android:src="@drawable/like"
+            app:layout_constraintBottom_toBottomOf="@+id/tvCommentTime"
+            app:layout_constraintStart_toEndOf="@+id/tvCommentTime"
+            app:layout_constraintTop_toTopOf="@+id/tvCommentTime" />
+
+        <TextView
+            android:id="@+id/tvCommentLikes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@+id/btnLikeComment"
+            app:layout_constraintStart_toEndOf="@+id/btnLikeComment"
+            app:layout_constraintTop_toTopOf="@+id/btnLikeComment"
+            tools:text="5" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

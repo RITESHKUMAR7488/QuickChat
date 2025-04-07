@@ -18,6 +18,7 @@ import com.example.quickchat.databinding.RvHomeProfileChildBinding
 import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
+import com.example.quickchat.mainModule.ui.activity.CommentActivity
 import com.example.quickchat.onboardingModule.models.UserModel
 
 class GetAllPostAdapter(
@@ -82,7 +83,6 @@ class GetAllPostAdapter(
             binding.tvTitle.text = item.title
             Glide.with(binding.root.context).load(item.userModels?.firstOrNull()?.imageUrl.toString()).into(binding.imageView2)
 
-
             // Set initial like state
             val isLiked = item.likes?.isNotEmpty() ?: false
             updateLikeUI(isLiked, item.likes?.size ?: 0)
@@ -107,6 +107,13 @@ class GetAllPostAdapter(
                 onLikeClickListener(item)
             }
 
+            // Add comment button click listener
+            binding.comment.setOnClickListener {
+                val intent = Intent(context, CommentActivity::class.java)
+                intent.putExtra("postId", item.postId)
+                context.startActivity(intent)
+            }
+
             // Load post image (if available)
             if (item.imageUrl == null) {
                 binding.postImage.visibility = View.GONE
@@ -127,7 +134,7 @@ class GetAllPostAdapter(
         }
     }
 
-    // ViewHolder for Single Community Item (Unused if we're using chunked RecyclerView)
+    // ViewHolder for Single Community Item (Unchanged)
     class TypeTwoViewHolder(private val binding: RvHomeProfileChildBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: CommunityModels) {
@@ -137,7 +144,7 @@ class GetAllPostAdapter(
         }
     }
 
-    // ViewHolder for Community Chunks (Horizontal RecyclerView)
+    // ViewHolder for Community Chunks (Unchanged)
     class CommunityChunkViewHolder(
         private val binding: ItemCommunityRecylerviewBinding,
         private val context: Context
