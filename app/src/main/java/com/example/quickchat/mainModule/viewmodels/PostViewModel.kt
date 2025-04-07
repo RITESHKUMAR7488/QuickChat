@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.quickchat.mainModule.models.AllCommunityModel
+import com.example.quickchat.mainModule.models.CommentModel
 import com.example.quickchat.mainModule.models.ImageUploadResponse
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
@@ -157,8 +158,44 @@ class PostViewModel @Inject constructor(private val repository: RepositoryMain,
             _users.value = it
         }
     }
+    fun addComment(postId: String, comment: CommentModel): LiveData<UiState<CommentModel>> {
+        val successData = MutableLiveData<UiState<CommentModel>>()
+        successData.value = UiState.Loading
+        repository.addComment(postId, comment) {
+            successData.value = it
+        }
+        return successData
+    }
 
+    fun getComments(postId: String): LiveData<UiState<List<CommentModel>>> {
+        val successData = MutableLiveData<UiState<List<CommentModel>>>()
+        successData.value = UiState.Loading
+        repository.getComments(postId) {
+            successData.value = it
+        }
+        return successData
+    }
+
+    fun likeComment(postId: String, commentId: String, userId: String): LiveData<UiState<CommentModel>> {
+        val successData = MutableLiveData<UiState<CommentModel>>()
+        successData.value = UiState.Loading
+        repository.likeComment(postId, commentId, userId) {
+            successData.value = it
+        }
+        return successData
+    }
+
+    fun unlikeComment(postId: String, commentId: String, userId: String): LiveData<UiState<CommentModel>> {
+        val successData = MutableLiveData<UiState<CommentModel>>()
+        successData.value = UiState.Loading
+        repository.unlikeComment(postId, commentId, userId) {
+            successData.value = it
+        }
+        return successData
+    }
 }
+
+
 
 
 

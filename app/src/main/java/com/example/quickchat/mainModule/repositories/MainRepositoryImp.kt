@@ -2,12 +2,16 @@ package com.example.quickchat.mainModule.repositories
 
 import android.content.Context
 import android.util.Log
+import androidx.collection.emptyIntList
 import androidx.lifecycle.MutableLiveData
 import com.example.quickchat.constants.Constant
+import com.example.quickchat.constants.Constant.COMMENTS
+import com.example.quickchat.constants.Constant.POSTS
 import com.example.quickchat.mainModule.inteface.ImageUploadApi
 import com.example.quickchat.mainModule.inteface.VideoGetApi
 import com.example.quickchat.mainModule.inteface.VideoUploadApi
 import com.example.quickchat.mainModule.models.AllCommunityModel
+import com.example.quickchat.mainModule.models.CommentModel
 import com.example.quickchat.mainModule.models.ImageUploadResponse
 import com.example.quickchat.mainModule.models.MainPostModel
 import com.example.quickchat.mainModule.models.PostModel
@@ -17,7 +21,9 @@ import com.example.quickchat.onboardingModule.models.UserModel
 import com.example.quickchat.utility.PreferenceManager
 import com.example.quickchat.utility.UiState
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -369,5 +375,103 @@ class MainRepositoryImp(
 
 
     }
+
+    override fun addComment(
+        postId: String,
+        comment: CommentModel,
+        result: (UiState<CommentModel>) -> Unit
+    ) {
+       val commentRef=database.collection(Constant.POSTS).document(postId).collection(Constant.COMMENTS).document()
+        comment.commentId=commentRef.id
+        comment.timestamp=System.currentTimeMillis()
+        comment.likes= 0
+
+        commentRef.set(comment).addOnSuccessListener {
+                result.invoke(UiState.Success(comment))
+        }.addOnFailureListener{ e ->
+            result.invoke(UiState.Failure(e.message ?: "An error occurred"))
+
+        }
+
+
+    }
+
+    override fun getComments(postId: String, result: (UiState<List<CommentModel>>) -> Unit) {
+        database.collection(Constant.POSTS)
+            .document(postId)
+            .collection(Constant.COMMENTS)
+            .orderBy("timestamp", Query.Direction.DESCENDING) // Newest first
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val comments = mutableListOf<CommentModel>()
+                for (document in querySnapshot.documents) {
+                    val comment = document.toObject(CommentModel::class.java)?.apply {
+                        commentId = document.id // Ensure commentId is set
+                    }
+                    comment?.let { comments.add(it) }
+                }
+                result.invoke(UiState.Success(comments))
+            }
+            .addOnFailureListener { exception ->
+                result.invoke(
+                    UiState.Failure(
+                        exception.message ?: "Failed to load comments"
+                    )
+                )
+            }
+    }
+
+    override fun likeComment(
+        postId: String,
+        commentId: String,
+        userId: String,
+        result: (UiState<CommentModel>) -> Unit
+    ) {
+        val commentRef = database.collection(Constant.POSTS)
+            .document(postId)
+            .collection(Constant.COMMENTS)
+            .document(commentId)
+
+        commentRef.update("likes", FieldValue.increment(1))
+            .addOnSuccessListener {
+                // Fetch the updated comment to return
+                commentRef.get().addOnSuccessListener { snapshot ->
+                    val updatedComment = snapshot.toObject(CommentModel::class.java)
+                    updatedComment?.let {
+                        result.invoke(UiState.Success(it))
+                    } ?: result.invoke(UiState.Failure("Comment not found"))
+                }
+            }
+            .addOnFailureListener { e ->
+                result.invoke(UiState.Failure(e.message ?: "Failed to like comment"))
+            }
+    }
+
+    override fun unlikeComment(
+        postId: String,
+        commentId: String,
+        userId: String,
+        result: (UiState<CommentModel>) -> Unit
+    ) {
+        val commentRef = database.collection(Constant.POSTS)
+            .document(postId)
+            .collection(Constant.COMMENTS)
+            .document(commentId)
+
+        commentRef.update("likes", FieldValue.increment(-1))
+            .addOnSuccessListener {
+                // Fetch the updated comment to return
+                commentRef.get().addOnSuccessListener { snapshot ->
+                    val updatedComment = snapshot.toObject(CommentModel::class.java)
+                    updatedComment?.let {
+                        result.invoke(UiState.Success(it))
+                    } ?: result.invoke(UiState.Failure("Comment not found"))
+                }
+            }
+            .addOnFailureListener { e ->
+                result.invoke(UiState.Failure(e.message ?: "Failed to unlike comment"))
+            }
+    }
+
 }
 
