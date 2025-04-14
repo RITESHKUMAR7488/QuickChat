@@ -79,6 +79,7 @@ class MainRepositoryImp(
                 result.invoke(
                     UiState.Failure(it.message ?: "An error occurred")
                 )
+
             }
 
     }

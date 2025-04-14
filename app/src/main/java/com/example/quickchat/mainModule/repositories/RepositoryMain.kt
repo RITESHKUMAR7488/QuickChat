@@ -1,6 +1,7 @@
 package com.example.quickchat.mainModule.repositories
 
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import com.example.quickchat.mainModule.models.AllCommunityModel
 import com.example.quickchat.mainModule.models.CommentModel
@@ -47,5 +48,6 @@ interface RepositoryMain {
     fun getComments(postId: String, result: (UiState<List<CommentModel>>) -> Unit)
     fun likeComment(postId: String,commentId: String, userId: String, result: (UiState<CommentModel>) -> Unit)
     fun unlikeComment(postId: String, commentId: String, userId: String, result: (UiState<CommentModel>) -> Unit)
+
 }
 

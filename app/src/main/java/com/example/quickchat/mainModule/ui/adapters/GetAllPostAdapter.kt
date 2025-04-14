@@ -24,7 +24,8 @@ import com.example.quickchat.onboardingModule.models.UserModel
 class GetAllPostAdapter(
     private val items: List<MainPostModel>,
     private val context: Context,
-    private val onLikeClickListener: (PostModel) -> Unit // Add a callback for like clicks
+    private val onLikeClickListener: (PostModel) -> Unit ,// Add a callback for like clicks
+    private val onShareClickListener: (PostModel) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -113,6 +114,9 @@ class GetAllPostAdapter(
                 intent.putExtra("postId", item.postId)
                 context.startActivity(intent)
             }
+            binding.share.setOnClickListener {
+                onShareClickListener(item)
+            }
 
             // Load post image (if available)
             if (item.imageUrl == null) {
@@ -123,6 +127,8 @@ class GetAllPostAdapter(
                     .into(binding.postImage)
             }
         }
+
+
 
         private fun updateLikeUI(isLiked: Boolean, likeCount: Int) {
             // Update like icon

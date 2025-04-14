@@ -7,15 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-
+import androidx.lifecycle.lifecycleScope
 import com.example.quickchat.R
 import com.example.quickchat.databinding.FragmentHomeBinding
 import com.example.quickchat.mainModule.models.MainPostModel
+import com.example.quickchat.mainModule.models.PostModel
 import com.example.quickchat.mainModule.ui.adapters.GetAllPostAdapter
 import com.example.quickchat.mainModule.viewmodels.PostViewModel
 import com.example.quickchat.utility.BaseFragment
+import com.example.quickchat.utility.ShareUtils
 import com.example.quickchat.utility.UiState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment() {
@@ -35,27 +38,46 @@ class HomeFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
     }
 
     private fun setupRecyclerView(list: List<MainPostModel>) {
-        // Pass the onLikeClickListener callback to the adapter
-        adapter = GetAllPostAdapter(list, requireActivity()) { post ->
-            // Handle like action here
-            val currentUserId = preferenceManager.userId // Replace with the actual current user's ID
-            if (post.likes?.contains(currentUserId) == true) {
-                // Unlike the post
-                if (currentUserId != null) {
-                    postViewModel.unlikePost(post.postId!!, currentUserId)
+        adapter = GetAllPostAdapter(
+            list,
+            requireActivity(),
+            // Like callback
+            onLikeClickListener = { post ->
+                // Handle like action
+                val currentUserId = preferenceManager.userId
+                if (post.likes?.contains(currentUserId) == true) {
+                    // Unlike the post
+                    if (currentUserId != null) {
+                        postViewModel.unlikePost(post.postId!!, currentUserId)
+                    }
+                } else {
+                    // Like the post
+                    if (currentUserId != null) {
+                        postViewModel.likePost(post.postId!!, currentUserId)
+                    }
                 }
-            } else {
-                // Like the post
-                if (currentUserId != null) {
-                    postViewModel.likePost(post.postId!!, currentUserId)
-                }
+            },
+            // Share callback
+            onShareClickListener = { post ->
+                handleSharePost(post)
+            }
+        )
+        binding.rvHomeMixed.adapter = adapter
+    }
+
+    private fun handleSharePost(post: PostModel) {
+        // Launch in a coroutine because sharing involves image processing
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                ShareUtils.sharePost(requireContext(), post)
+            } catch (e: Exception) {
+                Log.e("HomeFragment", "Error sharing post: ${e.message}")
+                commonUtil.showToast("Failed to share post")
             }
         }
-        binding.rvHomeMixed.adapter = adapter
     }
 
     private fun getALlPostData() {
